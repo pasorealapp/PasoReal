@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PasoReal</title>
+  <link rel="stylesheet" href="styles.css">
+  
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <!-- VIDEO FONDO LOGIN -->
+  <video id="bgVideo" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
+
+  <!-- LOGIN -->
+  <div id="login" class="screen active">
+    <div class="card">
+      <h1>Iniciar sesión</h1>
+      <p>Accede a tu experiencia PasoReal</p>
+      <input type="email" placeholder="Correo">
+      <input type="password" placeholder="Contraseña">
+      <button class="primary">Entrar</button>
+      <button class="link" id="recoverBtn">Recuperar contraseña</button>
+      <br>
+      <button class="link" id="goRegisterBtn">Crear cuenta</button>
+    </div>
+  </div>
+
+  <!-- REGISTRO -->
+  <div id="register" class="screen">
+    <div class="card">
+      <h1>Crear cuenta</h1>
+      <p>Accede a PasoReal</p>
+      <div class="row">
+        <input type="text" placeholder="Nombre">
+        <input type="text" placeholder="Apellido">
+      </div>
+      <input type="email" placeholder="Correo">
+      <input type="password" placeholder="Contraseña">
+      <input type="tel" placeholder="Teléfono (opcional)">
+      <button class="primary">Crear cuenta</button>
+      <button class="link" id="goLoginBtn">Ya tengo cuenta</button>
+    </div>
+  </div>
+  
+  <!-- RECUPERAR -->
+  <div id="recover" class="screen">
+    <div class="card">
+      <h1>Recuperar contraseña</h1>
+      <p>Ingresa tu correo o teléfono vinculado</p>
+      <input type="text" placeholder="Correo o teléfono">
+      <button class="primary">Enviar enlace</button>
+      <button class="link" id="cancelRecoverBtn">Cancelar</button>
+    </div>
+  </div>
+
+  <!-- INICIO -->
+  <div id="home" class="screen">
+    <div class="home-container">
+      <span class="badge">Experiencia Premium</span>
+      <h1>¿Dónde quieres caminar hoy?</h1>
+      <p>Elige una experiencia real</p>
+      <div class="option-card primary-card">
+        <strong>Elegir ruta</strong>
+        <small>Explora destinos reales en 360°</small>
+      </div>
+      <div class="option-card secondary-card">
+        <strong>Ver historial</strong>
+        <small>Tus caminatas anteriores</small>
+      </div>
+      <button class="logout-btn">Cerrar sesión</button>
+      <footer>PasoReal · Camina el mundo desde casa</footer>
+    </div>
+  </div>
+
+  <!-- ESTADOS -->
+  <div id="states" class="screen">
+    <div class="home-container">
+      <h1>Elige un estado</h1>
+      <p>La República Mexicana está formada por 32 estados. Elige uno para comenzar tu recorrido.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Aguascalientes</div>
+        <div class="option-card primary-card">Baja California</div>
+        <div class="option-card primary-card">Baja California Sur</div>
+        <div class="option-card primary-card">Campeche</div>
+        <div class="option-card primary-card">Chiapas</div>
+        <div class="option-card primary-card">Chihuahua</div>
+        <div class="option-card primary-card">Ciudad de México</div>
+        <div class="option-card primary-card">Coahuila</div>
+        <div class="option-card primary-card">Colima</div>
+        <div class="option-card primary-card">Durango</div>
+        <div class="option-card primary-card">Estado de México</div>
+        <div class="option-card primary-card">Guanajuato</div>
+        <div class="option-card primary-card">Guerrero</div>
+        <div class="option-card primary-card">Hidalgo</div>
+        <div class="option-card primary-card">Jalisco</div>
+        <div class="option-card primary-card">Michoacán</div>
+        <div class="option-card primary-card">Morelos</div>
+        <div class="option-card primary-card">Nayarit</div>
+        <div class="option-card primary-card">Nuevo León</div>
+        <div class="option-card primary-card">Oaxaca</div>
+        <div class="option-card primary-card">Puebla</div>
+        <div class="option-card primary-card">Querétaro</div>
+        <div class="option-card primary-card">Quintana Roo</div>
+        <div class="option-card primary-card">San Luis Potosí</div>
+        <div class="option-card primary-card">Sinaloa</div>
+        <div class="option-card primary-card">Sonora</div>
+        <div class="option-card primary-card">Tabasco</div>
+        <div class="option-card primary-card">Tamaulipas</div>
+        <div class="option-card primary-card">Tlaxcala</div>
+        <div class="option-card primary-card">Veracruz</div>
+        <div class="option-card primary-card">Yucatán</div>
+        <div class="option-card primary-card">Zacatecas</div>
+      </div>
+      <button class="link2" id="backHomeFromStates">Volver</button>
+    </div>
+  </div>
+
+  <!-- AGUASCALIENTES (Completo) -->
+  <div id="aguascalientes" class="screen">
+    <div class="home-container">
+      <h1>Aguascalientes</h1>
+      <p>El estado de Aguascalientes está formado por 11 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Aguascalientes</div>
+        <div class="option-card primary-card">Asientos</div>
+        <div class="option-card primary-card">Calvillo</div>
+        <div class="option-card primary-card">Cosío</div>
+        <div class="option-card primary-card">Jesús María</div>
+        <div class="option-card primary-card">Pabellón de Arteaga</div>
+        <div class="option-card primary-card">Rincón de Romos</div>
+        <div class="option-card primary-card">San Francisco de los Romo</div>
+        <div class="option-card primary-card">San José de Gracia</div>
+        <div class="option-card primary-card">Tepezalá</div>
+        <div class="option-card primary-card">El Llano</div>
+      </div>
+      <button class="link2" id="backToStatesFromAgs">Volver</button>
+    </div>
+  </div>
+
+  <!-- BAJA CALIFORNIA (Completo) -->
+  <div id="bajaCalifornia" class="screen">
+    <div class="home-container">
+      <h1>Baja California</h1>
+      <p>El estado de Baja California está formado por 7 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Ensenada</div>
+        <div class="option-card primary-card">Mexicali</div>
+        <div class="option-card primary-card">Tecate</div>
+        <div class="option-card primary-card">Tijuana</div>
+        <div class="option-card primary-card">Playas de Rosarito</div>
+        <div class="option-card primary-card">San Quintín</div>
+        <div class="option-card primary-card">San Felipe</div>
+      </div>
+      <button class="link2" id="backToStatesFromBC">Volver</button>
+    </div>
+  </div>
+
+  <!-- BAJA CALIFORNIA SUR (Completo) -->
+  <div id="bajaCaliforniaSur" class="screen">
+    <div class="home-container">
+      <h1>Baja California Sur</h1>
+      <p>El estado de Baja California Sur está formado por 5 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">La Paz</div>
+        <div class="option-card primary-card">Los Cabos</div>
+        <div class="option-card primary-card">Comondú</div>
+        <div class="option-card primary-card">Loreto</div>
+        <div class="option-card primary-card">Mulegé</div>
+      </div>
+      <button class="link2" id="backToStatesFromBCS">Volver</button>
+    </div>
+  </div>
+
+  <!-- LA PAZ - ZONAS -->
+  <div id="laPazZonas" class="screen">
+    <div class="home-container">
+      <h1>La Paz</h1>
+      <p>El municipio de La Paz incluye zonas urbanas y localidades con identidad propia. Elige dónde deseas explorar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">La Paz (Ciudad)</div>
+        <div class="option-card primary-card">Todos Santos</div>
+      </div>
+      <button class="link2" id="backToBCSFromLaPazZonas">Volver</button>
+    </div>
+  </div>
+
+  <!-- RUTAS - LA PAZ CIUDAD -->
+  <div id="laPazCiudadRutas" class="screen">
+    <div class="home-container">
+      <h1>La Paz</h1>
+      <p>La Paz es la capital de Baja California Sur, reconocida por su malecón, playas tranquilas y su cercanía con el Mar de Cortés. Elige una ruta para comenzar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card" id="goToMalecon">Malecón de La Paz</div>
+        <div class="option-card primary-card" id="goToCentro">Centro Histórico</div>
+        <div class="option-card primary-card">Playa El Coromuel</div>
+        <div class="option-card primary-card">Playa Balandra</div>
+      </div>
+      <button class="link2" id="backToLaPazZonasFromCiudad">Volver</button>
+    </div>
+  </div>
+
+  <!-- RUTA - MALECÓN DE LA PAZ -->
+  <div id="maleconLaPazRuta" class="screen">
+    <div id="tapToStart" class="tap-overlay">
+      <div class="tap-content">
+        <h2>Toque para comenzar</h2>
+        <p>Deslice el control de velocidad para iniciar la experiencia</p>
+      </div>
+    </div>
+    <div class="game-hud">
+      <div class="hud-item">
+        <span id="stepsValue">0</span>
+        <small>Pasos</small>
+      </div>
+      <div class="hud-item">
+        <span id="distanceValue">0.00</span>
+        <small>Km</small>
+      </div>
+    </div>
+    <div class="mini-map">
+      <div id="minileafletMap"></div>
+      <button class="map-close">×</button>
+    </div>
+    <div class="video-container">
+      <a-scene embedded vr-mode-ui="enabled: false">
+        <a-assets>
+          <video id="malecon360" muted playsinline webkit-playsinline preload="auto" crossorigin="anonymous"></video>
+        </a-assets>
+        <a-camera look-controls="enabled: true"></a-camera>
+        <a-videosphere id="videoSphere" rotation="0 -90 0"></a-videosphere>
+      </a-scene>
+    </div>
+    <div class="route-controls">
+      <button class="control-btn" id="startRoute">Iniciar</button>
+      <button class="control-btn" id="pauseRoute">Pausar</button>
+      <button class="control-btn danger" id="endRoute">Finalizar</button>
+    </div>
+    <div class="speed-control">
+      <label for="speedRange">Velocidad: <span id="speedValue">0</span> km/h</label>
+      <input type="range" id="speedRange" min="0" max="6" step="0.5" value="0"/>
+    </div>
+  </div>
+
+  <!-- RUTA FINALIZADA -->
+  <div id="routeFinish" class="screen">
+    <div class="finish-container">
+      <h1 class="finish-title">🏅 ¡Ruta completada!</h1>
+      <p class="finish-subtitle" id="finishSubtitle">Has finalizado tu recorrido.</p>
+      <div class="route-map">
+        <div id="leafletMap"></div>
+      </div>
+      <div class="route-summary">
+        <h3>Resumen del recorrido</h3>
+        <div class="summary-row">
+          <span>⏱️ Tiempo</span>
+          <strong id="finishTime">00:00</strong>
+        </div>
+        <div class="summary-row">
+          <span>🥾 Pasos</span>
+          <strong id="finishSteps">0</strong>
+        </div>
+        <div class="summary-row">
+          <span>📏 Distancia</span>
+          <strong id="finishDistance">0.00 km</strong>
+        </div>
+        <div class="summary-row">
+          <span>📍 Ruta</span>
+          <strong id="finishRouteName">Malecón de La Paz</strong>
+        </div>
+      </div>
+      <div class="route-summary achievement">
+        <h3>🏆 Logro desbloqueado</h3>
+        <p><strong id="achievementTitle">Explorador del Malecón</strong></p>
+        <p id="achievementDesc">Primera caminata completada en La Paz</p>
+      </div>
+      <div class="final-actions">
+        <button class="primary" id="backToRoutes">Volver a rutas</button>
+        <button class="primary" id="repeatRoute">Repetir recorrido</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RUTAS - TODOS SANTOS -->
+  <div id="todosSantosRutas" class="screen">
+    <div class="home-container">
+      <h1>Todos Santos</h1>
+      <p>Todos Santos es un Pueblo Mágico de Baja California Sur, reconocido por su arte, arquitectura histórica y cercanía con el océano Pacífico. Elige una ruta para comenzar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Centro Histórico</div>
+        <div class="option-card primary-card">Galerías de Arte</div>
+        <div class="option-card primary-card">Playa Cerritos</div>
+        <div class="option-card primary-card">Playa San Pedrito</div>
+      </div>
+      <button class="link2" id="backToLaPazZonasFromTodosSantos">Volver</button>
+    </div>
+  </div>
+
+  <!-- LOS CABOS -->
+  <div id="losCabos" class="screen">
+    <div class="home-container">
+      <h1>Los Cabos</h1>
+      <p>Los Cabos es un municipio único de Baja California Sur, conformado por dos zonas principales. Cada una ofrece experiencias distintas entre naturaleza, cultura y mar. Elige dónde deseas explorar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Cabo San Lucas</div>
+        <div class="option-card primary-card">San José del Cabo</div>
+      </div>
+      <button class="link2" id="backToBCSFromLosCabos">Volver</button>
+    </div>
+  </div>
+
+  <!-- RUTAS - CABO SAN LUCAS -->
+  <div id="caboSanLucasRutas" class="screen">
+    <div class="home-container">
+      <h1>Cabo San Lucas</h1>
+      <p>Cabo San Lucas es conocido por sus playas, su marina, el Arco y su ambiente turístico. Elige una ruta para comenzar a explorar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">El Arco de Cabo San Lucas</div>
+        <div class="option-card primary-card">Playa del Amor</div>
+        <div class="option-card primary-card">Marina Cabo San Lucas</div>
+        <div class="option-card primary-card">Playa Médano</div>
+        <div class="option-card primary-card">Centro Turístico</div>
+      </div>
+      <button class="link2" id="backToLosCabosFromCSL">Volver</button>
+    </div>
+  </div>
+
+  <!-- RUTAS - SAN JOSÉ DEL CABO -->
+  <div id="sanJoseDelCaboRutas" class="screen">
+    <div class="home-container">
+      <h1>San José del Cabo</h1>
+      <p>San José del Cabo destaca por su centro histórico, galerías de arte y playas tranquilas. Elige una ruta para comenzar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Centro Histórico</div>
+        <div class="option-card primary-card">Distrito del Arte</div>
+        <div class="option-card primary-card">Playa Palmilla</div>
+        <div class="option-card primary-card">Playa Costa Azul</div>
+        <div class="option-card primary-card">Estero San José</div>
+      </div>
+      <button class="link2" id="backToLosCabosFromSJC">Volver</button>
+    </div>
+  </div>
+
+  <!-- CAMPECHE (Completo) -->
+  <div id="campeche" class="screen">
+    <div class="home-container">
+      <h1>Campeche</h1>
+      <p>El estado de Campeche está formado por 13 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Campeche</div>
+        <div class="option-card primary-card">Calkiní</div>
+        <div class="option-card primary-card">Calakmul</div>
+        <div class="option-card primary-card">Candelaria</div>
+        <div class="option-card primary-card">Carmen</div>
+        <div class="option-card primary-card">Champotón</div>
+        <div class="option-card primary-card">Escárcega</div>
+        <div class="option-card primary-card">Hecelchakán</div>
+        <div class="option-card primary-card">Hopelchén</div>
+        <div class="option-card primary-card">Palizada</div>
+        <div class="option-card primary-card">Tenabo</div>
+        <div class="option-card primary-card">Seybaplaya</div>
+        <div class="option-card primary-card">Dzitbalché</div>
+      </div>
+      <button class="link2" id="backToStatesFromCampeche">Volver</button>
+    </div>
+  </div>
+
+  <!-- CHIAPAS (Completo con 124 municipios) -->
+  <div id="chiapas" class="screen">
+    <div class="home-container">
+      <h1>Chiapas</h1>
+      <p>El estado de Chiapas está formado por 124 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Tuxtla Gutiérrez</div>
+        <div class="option-card primary-card">San Cristóbal de las Casas</div>
+        <div class="option-card primary-card">Tapachula</div>
+        <div class="option-card primary-card">Palenque</div>
+        <div class="option-card primary-card">Comitán de Domínguez</div>
+        <div class="option-card primary-card">Chiapa de Corzo</div>
+        <div class="option-card primary-card">Ocosingo</div>
+        <div class="option-card primary-card">San Juan Chamula</div>
+        <div class="option-card primary-card">Cintalapa</div>
+        <div class="option-card primary-card">Las Rosas</div>
+        <div class="option-card primary-card">Huixtán</div>
+        <div class="option-card primary-card">Acala</div>
+        <div class="option-card primary-card">Altamirano</div>
+        <div class="option-card primary-card">Amatenango del Valle</div>
+        <div class="option-card primary-card">Amatán</div>
+        <div class="option-card primary-card">Ángel Albino Corzo</div>
+        <div class="option-card primary-card">Arriaga</div>
+        <div class="option-card primary-card">Bejucal de Ocampo</div>
+        <div class="option-card primary-card">Bella Vista</div>
+        <div class="option-card primary-card">Berriozábal</div>
+        <div class="option-card primary-card">Bochil</div>
+        <div class="option-card primary-card">Cacahoatán</div>
+        <div class="option-card primary-card">Catazajá</div>
+        <div class="option-card primary-card">Chalchihuitán</div>
+        <div class="option-card primary-card">Chamula</div>
+        <div class="option-card primary-card">Chenalhó</div>
+        <div class="option-card primary-card">Chiapa de Corzo</div>
+        <div class="option-card primary-card">Chiapilla</div>
+        <div class="option-card primary-card">Chicoasén</div>
+        <div class="option-card primary-card">Chicomuselo</div>
+        <div class="option-card primary-card">Coapilla</div>
+        <div class="option-card primary-card">Copainalá</div>
+        <div class="option-card primary-card">El Bosque</div>
+        <div class="option-card primary-card">El Porvenir</div>
+        <div class="option-card primary-card">Escuintla</div>
+        <div class="option-card primary-card">Francisco León</div>
+        <div class="option-card primary-card">Frontera Comalapa</div>
+        <div class="option-card primary-card">Frontera Hidalgo</div>
+        <div class="option-card primary-card">Honduras de la Sierra</div>
+        <div class="option-card primary-card">Huehuetán</div>
+        <div class="option-card primary-card">Huitiupán</div>
+        <div class="option-card primary-card">Huixtla</div>
+        <div class="option-card primary-card">Ixhuatán</div>
+        <div class="option-card primary-card">Ixtacomitán</div>
+        <div class="option-card primary-card">Ixtapa</div>
+        <div class="option-card primary-card">Ixtapangajoya</div>
+        <div class="option-card primary-card">Jiquipilas</div>
+        <div class="option-card primary-card">Jitotol</div>
+        <div class="option-card primary-card">Juárez</div>
+        <div class="option-card primary-card">La Concordia</div>
+        <div class="option-card primary-card">La Grandeza</div>
+        <div class="option-card primary-card">La Independencia</div>
+        <div class="option-card primary-card">La Libertad</div>
+        <div class="option-card primary-card">La Trinitaria</div>
+        <div class="option-card primary-card">Larráinzar</div>
+        <div class="option-card primary-card">Las Margaritas</div>
+        <div class="option-card primary-card">Mapastepec</div>
+        <div class="option-card primary-card">Maravilla Tenejapa</div>
+        <div class="option-card primary-card">Marqués de Comillas</div>
+        <div class="option-card primary-card">Mazapa de Madero</div>
+        <div class="option-card primary-card">Mazatán</div>
+        <div class="option-card primary-card">Metapa</div>
+        <div class="option-card primary-card">Mezcalapa</div>
+        <div class="option-card primary-card">Mitontic</div>
+        <div class="option-card primary-card">Montecristo de Guerrero</div>
+        <div class="option-card primary-card">Motozintla</div>
+        <div class="option-card primary-card">Nicolás Ruíz</div>
+        <div class="option-card primary-card">Ocosingo</div>
+        <div class="option-card primary-card">Ocotepec</div>
+        <div class="option-card primary-card">Ocozocoautla de Espinosa</div>
+        <div class="option-card primary-card">Ostuacán</div>
+        <div class="option-card primary-card">Osumacinta</div>
+        <div class="option-card primary-card">Oxchuc</div>
+        <div class="option-card primary-card">Palenque</div>
+        <div class="option-card primary-card">Pantelhó</div>
+        <div class="option-card primary-card">Pantepec</div>
+        <div class="option-card primary-card">Pichucalco</div>
+        <div class="option-card primary-card">Pijijiapan</div>
+        <div class="option-card primary-card">Pueblo Nuevo Solistahuacán</div>
+        <div class="option-card primary-card">Rayón</div>
+        <div class="option-card primary-card">Reforma</div>
+        <div class="option-card primary-card">Rincón Chamula San Pedro</div>
+        <div class="option-card primary-card">Sabanilla</div>
+        <div class="option-card primary-card">Salto de Agua</div>
+        <div class="option-card primary-card">San Andrés Duraznal</div>
+        <div class="option-card primary-card">San Fernando</div>
+        <div class="option-card primary-card">San Lucas</div>
+        <div class="option-card primary-card">Santiago el Pinar</div>
+        <div class="option-card primary-card">Siltepec</div>
+        <div class="option-card primary-card">Simojovel</div>
+        <div class="option-card primary-card">Sitalá</div>
+        <div class="option-card primary-card">Socoltenango</div>
+        <div class="option-card primary-card">Solosuchiapa</div>
+        <div class="option-card primary-card">Soyaló</div>
+        <div class="option-card primary-card">Suchiapa</div>
+        <div class="option-card primary-card">Suchiate</div>
+        <div class="option-card primary-card">Sunuapa</div>
+        <div class="option-card primary-card">Tapachula</div>
+        <div class="option-card primary-card">Tapalapa</div>
+        <div class="option-card primary-card">Tecpatán</div>
+        <div class="option-card primary-card">Tenejapa</div>
+        <div class="option-card primary-card">Teopisca</div>
+        <div class="option-card primary-card">Tila</div>
+        <div class="option-card primary-card">Tonalá</div>
+        <div class="option-card primary-card">Totolapa</div>
+        <div class="option-card primary-card">Tumbalá</div>
+        <div class="option-card primary-card">Tuxtla Chico</div>
+        <div class="option-card primary-card">Tuxtla Gutiérrez</div>
+        <div class="option-card primary-card">Tuzantán</div>
+        <div class="option-card primary-card">Tzimol</div>
+        <div class="option-card primary-card">Unión Juárez</div>
+        <div class="option-card primary-card">Venustiano Carranza</div>
+        <div class="option-card primary-card">Villa Comaltitlán</div>
+        <div class="option-card primary-card">Villa Corzo</div>
+        <div class="option-card primary-card">Villaflores</div>
+        <div class="option-card primary-card">Yajalón</div>
+        <div class="option-card primary-card">Zinacantán</div>
+      </div>
+      <button class="link2" id="backToStatesFromChiapas">Volver</button>
+    </div>
+  </div>
+
+  <!-- CHIHUAHUA (Completo con 67 municipios) -->
+  <div id="chihuahua" class="screen">
+    <div class="home-container">
+      <h1>Chihuahua</h1>
+      <p>El estado de Chihuahua está formado por 67 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Chihuahua</div>
+        <div class="option-card primary-card">Juárez</div>
+        <div class="option-card primary-card">Cuauhtémoc</div>
+        <div class="option-card primary-card">Delicias</div>
+        <div class="option-card primary-card">Hidalgo del Parral</div>
+        <div class="option-card primary-card">Guachochi</div>
+        <div class="option-card primary-card">Casas Grandes</div>
+        <div class="option-card primary-card">Nuevo Casas Grandes</div>
+        <div class="option-card primary-card">Jiménez</div>
+        <div class="option-card primary-card">Camargo</div>
+        <div class="option-card primary-card">Guadalupe y Calvo</div>
+        <div class="option-card primary-card">Madera</div>
+        <div class="option-card primary-card">Bachíniva</div>
+        <div class="option-card primary-card">Balleza</div>
+        <div class="option-card primary-card">Batopilas</div>
+        <div class="option-card primary-card">Bocoyna</div>
+        <div class="option-card primary-card">Carichí</div>
+        <div class="option-card primary-card">Cusihuiriachi</div>
+        <div class="option-card primary-card">Galeana</div>
+        <div class="option-card primary-card">Gran Morelos</div>
+        <div class="option-card primary-card">Guadalupe</div>
+        <div class="option-card primary-card">Guazapares</div>
+        <div class="option-card primary-card">Guerrero</div>
+        <div class="option-card primary-card">Hidalgo del Parral</div>
+        <div class="option-card primary-card">Ignacio Zaragoza</div>
+        <div class="option-card primary-card">Janos</div>
+        <div class="option-card primary-card">Julimes</div>
+        <div class="option-card primary-card">La Cruz</div>
+        <div class="option-card primary-card">López</div>
+        <div class="option-card primary-card">Magdalena</div>
+        <div class="option-card primary-card">Matachí</div>
+        <div class="option-card primary-card">Matamoros</div>
+        <div class="option-card primary-card">Meoqui</div>
+        <div class="option-card primary-card">Morelos</div>
+        <div class="option-card primary-card">Moris</div>
+        <div class="option-card primary-card">Namiquipa</div>
+        <div class="option-card primary-card">Nonoava</div>
+        <div class="option-card primary-card">Ocampo</div>
+        <div class="option-card primary-card">Ojinaga</div>
+        <div class="option-card primary-card">Praxedis G. Guerrero</div>
+        <div class="option-card primary-card">Riva Palacio</div>
+        <div class="option-card primary-card">Rosales</div>
+        <div class="option-card primary-card">Rosario</div>
+        <div class="option-card primary-card">San Francisco de Borja</div>
+        <div class="option-card primary-card">San Francisco de Conchos</div>
+        <div class="option-card primary-card">San Francisco del Oro</div>
+        <div class="option-card primary-card">Santa Bárbara</div>
+        <div class="option-card primary-card">Santa Isabel</div>
+        <div class="option-card primary-card">Satevó</div>
+        <div class="option-card primary-card">Saucillo</div>
+        <div class="option-card primary-card">Temósachi</div>
+        <div class="option-card primary-card">Urique</div>
+        <div class="option-card primary-card">Uruachi</div>
+        <div class="option-card primary-card">Valle de Zaragoza</div>
+        <div class="option-card primary-card">Ahumada</div>
+        <div class="option-card primary-card">Aldama</div>
+        <div class="option-card primary-card">Allende</div>
+        <div class="option-card primary-card">Aquiles Serdán</div>
+        <div class="option-card primary-card">Ascensión</div>
+        <div class="option-card primary-card">Buenaventura</div>
+        <div class="option-card primary-card">Camargo</div>
+        <div class="option-card primary-card">Coronado</div>
+        <div class="option-card primary-card">Coyame del Sotol</div>
+        <div class="option-card primary-card">Gómez Farías</div>
+        <div class="option-card primary-card">Huejotitán</div>
+        <div class="option-card primary-card">Manuel Benavides</div>
+        <div class="option-card primary-card">Ocampo</div>
+        <div class="option-card primary-card">San Francisco de Conchos</div>
+      </div>
+      <button class="link2" id="backToStatesFromChihuahua">Volver</button>
+    </div>
+  </div>
+
+  <!-- CIUDAD DE MÉXICO (Completo) -->
+  <div id="cdmx" class="screen">
+    <div class="home-container">
+      <h1>Ciudad de México</h1>
+      <p>La Ciudad de México está formada por 16 alcaldías. Elige una para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Álvaro Obregón</div>
+        <div class="option-card primary-card">Azcapotzalco</div>
+        <div class="option-card primary-card">Benito Juárez</div>
+        <div class="option-card primary-card">Coyoacán</div>
+        <div class="option-card primary-card">Cuajimalpa de Morelos</div>
+        <div class="option-card primary-card">Cuauhtémoc</div>
+        <div class="option-card primary-card">Gustavo A. Madero</div>
+        <div class="option-card primary-card">Iztacalco</div>
+        <div class="option-card primary-card">Iztapalapa</div>
+        <div class="option-card primary-card">La Magdalena Contreras</div>
+        <div class="option-card primary-card">Miguel Hidalgo</div>
+        <div class="option-card primary-card">Milpa Alta</div>
+        <div class="option-card primary-card">Tláhuac</div>
+        <div class="option-card primary-card">Tlalpan</div>
+        <div class="option-card primary-card">Venustiano Carranza</div>
+        <div class="option-card primary-card">Xochimilco</div>
+      </div>
+      <button class="link2" id="backToStatesFromCDMX">Volver</button>
+    </div>
+  </div>
+
+  <!-- COAHUILA (Completo con 38 municipios) -->
+  <div id="coahuila" class="screen">
+    <div class="home-container">
+      <h1>Coahuila</h1>
+      <p>El estado de Coahuila está formado por 38 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Saltillo</div>
+        <div class="option-card primary-card">Torreón</div>
+        <div class="option-card primary-card">Monclova</div>
+        <div class="option-card primary-card">Piedras Negras</div>
+        <div class="option-card primary-card">Acuña</div>
+        <div class="option-card primary-card">Matamoros</div>
+        <div class="option-card primary-card">Frontera</div>
+        <div class="option-card primary-card">San Pedro</div>
+        <div class="option-card primary-card">Sabinas</div>
+        <div class="option-card primary-card">Múzquiz</div>
+        <div class="option-card primary-card">Nava</div>
+        <div class="option-card primary-card">Escobedo</div>
+        <div class="option-card primary-card">Zaragoza</div>
+        <div class="option-card primary-card">Progreso</div>
+        <div class="option-card primary-card">Francisco I. Madero</div>
+        <div class="option-card primary-card">Ramos Arizpe</div>
+        <div class="option-card primary-card">General Cepeda</div>
+        <div class="option-card primary-card">Arteaga</div>
+        <div class="option-card primary-card">Abasolo</div>
+        <div class="option-card primary-card">Castaños</div>
+        <div class="option-card primary-card">Cuatro Ciénegas</div>
+        <div class="option-card primary-card">Lamadrid</div>
+        <div class="option-card primary-card">Nadadores</div>
+        <div class="option-card primary-card">Ocampo</div>
+        <div class="option-card primary-card">Parras</div>
+        <div class="option-card primary-card">Sacramento</div>
+        <div class="option-card primary-card">San Buenaventura</div>
+        <div class="option-card primary-card">San Juan de Sabinas</div>
+        <div class="option-card primary-card">Sierra Mojada</div>
+        <div class="option-card primary-card">Viesca</div>
+        <div class="option-card primary-card">Villa Unión</div>
+        <div class="option-card primary-card">Allende</div>
+        <div class="option-card primary-card">Guerrero</div>
+        <div class="option-card primary-card">Hidalgo</div>
+        <div class="option-card primary-card">Jiménez</div>
+        <div class="option-card primary-card">Juárez</div>
+        <div class="option-card primary-card">Morelos</div>
+        <div class="option-card primary-card">Ocampo</div>
+      </div>
+      <button class="link2" id="backToStatesFromCoahuila">Volver</button>
+    </div>
+  </div>
+
+  <!-- COLIMA (Completo) -->
+  <div id="colima" class="screen">
+    <div class="home-container">
+      <h1>Colima</h1>
+      <p>El estado de Colima está formado por 10 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Colima</div>
+        <div class="option-card primary-card">Manzanillo</div>
+        <div class="option-card primary-card">Tecomán</div>
+        <div class="option-card primary-card">Villa de Álvarez</div>
+        <div class="option-card primary-card">Comala</div>
+        <div class="option-card primary-card">Armería</div>
+        <div class="option-card primary-card">Coquimatlán</div>
+        <div class="option-card primary-card">Cuauhtémoc</div>
+        <div class="option-card primary-card">Ixtlahuacán</div>
+        <div class="option-card primary-card">Minatitlán</div>
+      </div>
+      <button class="link2" id="backToStatesFromColima">Volver</button>
+    </div>
+  </div>
+
+  <!-- DURANGO (Completo con 39 municipios) -->
+  <div id="durango" class="screen">
+    <div class="home-container">
+      <h1>Durango</h1>
+      <p>El estado de Durango está formado por 39 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Durango</div>
+        <div class="option-card primary-card">Gómez Palacio</div>
+        <div class="option-card primary-card">Lerdo</div>
+        <div class="option-card primary-card">Santiago Papasquiaro</div>
+        <div class="option-card primary-card">Guadalupe Victoria</div>
+        <div class="option-card primary-card">Canatlán</div>
+        <div class="option-card primary-card">Cuencamé</div>
+        <div class="option-card primary-card">Mapimí</div>
+        <div class="option-card primary-card">Mezquital</div>
+        <div class="option-card primary-card">Nuevo Ideal</div>
+        <div class="option-card primary-card">Poanas</div>
+        <div class="option-card primary-card">Pueblo Nuevo</div>
+        <div class="option-card primary-card">Rodeo</div>
+        <div class="option-card primary-card">San Bernardo</div>
+        <div class="option-card primary-card">San Dimas</div>
+        <div class="option-card primary-card">San Juan de Guadalupe</div>
+        <div class="option-card primary-card">San Juan del Río</div>
+        <div class="option-card primary-card">San Luis del Cordero</div>
+        <div class="option-card primary-card">San Pedro del Gallo</div>
+        <div class="option-card primary-card">Santa Clara</div>
+        <div class="option-card primary-card">Súchil</div>
+        <div class="option-card primary-card">Tamazula</div>
+        <div class="option-card primary-card">Tepehuanes</div>
+        <div class="option-card primary-card">Tlahualilo</div>
+        <div class="option-card primary-card">Topia</div>
+        <div class="option-card primary-card">Vicente Guerrero</div>
+        <div class="option-card primary-card">El Oro</div>
+        <div class="option-card primary-card">Hidalgo</div>
+        <div class="option-card primary-card">Indé</div>
+        <div class="option-card primary-card">Nombre de Dios</div>
+        <div class="option-card primary-card">Ocampo</div>
+        <div class="option-card primary-card">Otáez</div>
+        <div class="option-card primary-card">Pánuco de Coronado</div>
+        <div class="option-card primary-card">Peñón Blanco</div>
+        <div class="option-card primary-card">San Miguel de Cruces</div>
+        <div class="option-card primary-card">Tayoltita</div>
+        <div class="option-card primary-card">Villa Hidalgo</div>
+        <div class="option-card primary-card">Villa Unión</div>
+        <div class="option-card primary-card">Guanaceví</div>
+      </div>
+      <button class="link2" id="backToStatesFromDurango">Volver</button>
+    </div>
+  </div>
+
+  <!-- ESTADO DE MÉXICO (25 principales) -->
+  <div id="edomex" class="screen">
+    <div class="home-container">
+      <h1>Estado de México</h1>
+      <p>El Estado de México está formado por 125 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Toluca</div>
+        <div class="option-card primary-card">Ecatepec de Morelos</div>
+        <div class="option-card primary-card">Naucalpan de Juárez</div>
+        <div class="option-card primary-card">Nezahualcóyotl</div>
+        <div class="option-card primary-card">Tlalnepantla de Baz</div>
+        <div class="option-card primary-card">Metepec</div>
+        <div class="option-card primary-card">Atizapán de Zaragoza</div>
+        <div class="option-card primary-card">Cuautitlán Izcalli</div>
+        <div class="option-card primary-card">Texcoco</div>
+        <div class="option-card primary-card">Chalco</div>
+        <div class="option-card primary-card">Chimalhuacán</div>
+        <div class="option-card primary-card">Ixtapaluca</div>
+        <div class="option-card primary-card">Valle de Chalco Solidaridad</div>
+        <div class="option-card primary-card">Huixquilucan</div>
+        <div class="option-card primary-card">Lerma</div>
+        <div class="option-card primary-card">Zinacantepec</div>
+        <div class="option-card primary-card">Coacalco de Berriozábal</div>
+        <div class="option-card primary-card">Tultitlán</div>
+        <div class="option-card primary-card">Nicolás Romero</div>
+        <div class="option-card primary-card">Tecámac</div>
+        <div class="option-card primary-card">La Paz</div>
+        <div class="option-card primary-card">Tultepec</div>
+        <div class="option-card primary-card">Melchor Ocampo</div>
+        <div class="option-card primary-card">Acolman</div>
+        <div class="option-card primary-card">Zumpango</div>
+      </div>
+      <button class="link2" id="backToStatesFromEdomex">Volver</button>
+    </div>
+  </div>
+
+  <!-- GUANAJUATO (Completo con 46 municipios) -->
+  <div id="guanajuato" class="screen">
+    <div class="home-container">
+      <h1>Guanajuato</h1>
+      <p>El estado de Guanajuato está formado por 46 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">León</div>
+        <div class="option-card primary-card">Irapuato</div>
+        <div class="option-card primary-card">Celaya</div>
+        <div class="option-card primary-card">Salamanca</div>
+        <div class="option-card primary-card">Guanajuato</div>
+        <div class="option-card primary-card">San Miguel de Allende</div>
+        <div class="option-card primary-card">Dolores Hidalgo</div>
+        <div class="option-card primary-card">Silao</div>
+        <div class="option-card primary-card">Abasolo</div>
+        <div class="option-card primary-card">Acámbaro</div>
+        <div class="option-card primary-card">Apaseo el Alto</div>
+        <div class="option-card primary-card">Apaseo el Grande</div>
+        <div class="option-card primary-card">Atarjea</div>
+        <div class="option-card primary-card">Comonfort</div>
+        <div class="option-card primary-card">Coroneo</div>
+        <div class="option-card primary-card">Cortazar</div>
+        <div class="option-card primary-card">Cuerámaro</div>
+        <div class="option-card primary-card">Doctor Mora</div>
+        <div class="option-card primary-card">Huanímaro</div>
+        <div class="option-card primary-card">Jaral del Progreso</div>
+        <div class="option-card primary-card">Jerécuaro</div>
+        <div class="option-card primary-card">Manuel Doblado</div>
+        <div class="option-card primary-card">Moroleón</div>
+        <div class="option-card primary-card">Ocampo</div>
+        <div class="option-card primary-card">Pénjamo</div>
+        <div class="option-card primary-card">Pueblo Nuevo</div>
+        <div class="option-card primary-card">Purísima del Rincón</div>
+        <div class="option-card primary-card">Romita</div>
+        <div class="option-card primary-card">Salvatierra</div>
+        <div class="option-card primary-card">San Diego de la Unión</div>
+        <div class="option-card primary-card">San Felipe</div>
+        <div class="option-card primary-card">San Francisco del Rincón</div>
+        <div class="option-card primary-card">San José Iturbide</div>
+        <div class="option-card primary-card">San Luis de la Paz</div>
+        <div class="option-card primary-card">Santa Catarina</div>
+        <div class="option-card primary-card">Santa Cruz de Juventino Rosas</div>
+        <div class="option-card primary-card">Santiago Maravatío</div>
+        <div class="option-card primary-card">Tarandacuao</div>
+        <div class="option-card primary-card">Tarimoro</div>
+        <div class="option-card primary-card">Tierra Blanca</div>
+        <div class="option-card primary-card">Uriangato</div>
+        <div class="option-card primary-card">Valle de Santiago</div>
+        <div class="option-card primary-card">Victoria</div>
+        <div class="option-card primary-card">Villagrán</div>
+        <div class="option-card primary-card">Xichú</div>
+        <div class="option-card primary-card">Yuriria</div>
+      </div>
+      <button class="link2" id="backToStatesFromGuanajuato">Volver</button>
+    </div>
+  </div>
+
+  <!-- GUERRERO (25 principales) -->
+  <div id="guerrero" class="screen">
+    <div class="home-container">
+      <h1>Guerrero</h1>
+      <p>El estado de Guerrero está formado por 85 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Acapulco de Juárez</div>
+        <div class="option-card primary-card">Chilpancingo de los Bravo</div>
+        <div class="option-card primary-card">Iguala de la Independencia</div>
+        <div class="option-card primary-card">Taxco de Alarcón</div>
+        <div class="option-card primary-card">Zihuatanejo de Azueta</div>
+        <div class="option-card primary-card">Atoyac de Álvarez</div>
+        <div class="option-card primary-card">Ayutla de los Libres</div>
+        <div class="option-card primary-card">Ometepec</div>
+        <div class="option-card primary-card">Tlapa de Comonfort</div>
+        <div class="option-card primary-card">Teloloapan</div>
+        <div class="option-card primary-card">Coyuca de Catalán</div>
+        <div class="option-card primary-card">San Marcos</div>
+        <div class="option-card primary-card">Técpan de Galeana</div>
+        <div class="option-card primary-card">Mártir de Cuilapan</div>
+        <div class="option-card primary-card">Florencio Villarreal</div>
+        <div class="option-card primary-card">Cutzamala de Pinzón</div>
+        <div class="option-card primary-card">Pilcaya</div>
+        <div class="option-card primary-card">General Heliodoro Castillo</div>
+        <div class="option-card primary-card">Eduardo Neri</div>
+        <div class="option-card primary-card">José Azueta</div>
+        <div class="option-card primary-card">Juan R. Escudero</div>
+        <div class="option-card primary-card">Leonardo Bravo</div>
+        <div class="option-card primary-card">Petatlán</div>
+        <div class="option-card primary-card">Cocula</div>
+        <div class="option-card primary-card">Buenavista de Cuéllar</div>
+      </div>
+      <button class="link2" id="backToStatesFromGuerrero">Volver</button>
+    </div>
+  </div>
+
+  <!-- HIDALGO (25 principales) -->
+  <div id="hidalgo" class="screen">
+    <div class="home-container">
+      <h1>Hidalgo</h1>
+      <p>El estado de Hidalgo está formado por 84 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Pachuca de Soto</div>
+        <div class="option-card primary-card">Tulancingo de Bravo</div>
+        <div class="option-card primary-card">Tula de Allende</div>
+        <div class="option-card primary-card">Tizayuca</div>
+        <div class="option-card primary-card">Ixmiquilpan</div>
+        <div class="option-card primary-card">Actopan</div>
+        <div class="option-card primary-card">Apan</div>
+        <div class="option-card primary-card">Huejutla de Reyes</div>
+        <div class="option-card primary-card">Tepeji del Río</div>
+        <div class="option-card primary-card">Zimapán</div>
+        <div class="option-card primary-card">Mineral de la Reforma</div>
+        <div class="option-card primary-card">Mixquiahuala de Juárez</div>
+        <div class="option-card primary-card">Progreso de Obregón</div>
+        <div class="option-card primary-card">Santiago Tulantepec</div>
+        <div class="option-card primary-card">Tasquillo</div>
+        <div class="option-card primary-card">Tepeapulco</div>
+        <div class="option-card primary-card">Tezontepec de Aldama</div>
+        <div class="option-card primary-card">Tlahuelilpan</div>
+        <div class="option-card primary-card">Tlaxcoapan</div>
+        <div class="option-card primary-card">Atotonilco de Tula</div>
+        <div class="option-card primary-card">Cuautepec de Hinojosa</div>
+        <div class="option-card primary-card">El Arenal</div>
+        <div class="option-card primary-card">Francisco I. Madero</div>
+        <div class="option-card primary-card">Huichapan</div>
+        <div class="option-card primary-card">San Agustín Tlaxiaca</div>
+      </div>
+      <button class="link2" id="backToStatesFromHidalgo">Volver</button>
+    </div>
+  </div>
+
+  <!-- JALISCO (25 principales) -->
+  <div id="jalisco" class="screen">
+    <div class="home-container">
+      <h1>Jalisco</h1>
+      <p>El estado de Jalisco está formado por 125 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Guadalajara</div>
+        <div class="option-card primary-card">Zapopan</div>
+        <div class="option-card primary-card">San Pedro Tlaquepaque</div>
+        <div class="option-card primary-card">Tonalá</div>
+        <div class="option-card primary-card">Tlajomulco de Zúñiga</div>
+        <div class="option-card primary-card">Puerto Vallarta</div>
+        <div class="option-card primary-card">Tepatitlán de Morelos</div>
+        <div class="option-card primary-card">Lagos de Moreno</div>
+        <div class="option-card primary-card">Ocotlán</div>
+        <div class="option-card primary-card">Zapotlán el Grande</div>
+        <div class="option-card primary-card">Tequila</div>
+        <div class="option-card primary-card">El Salto</div>
+        <div class="option-card primary-card">Ixtlahuacán de los Membrillos</div>
+        <div class="option-card primary-card">Acatlán de Juárez</div>
+        <div class="option-card primary-card">Ahualulco de Mercado</div>
+        <div class="option-card primary-card">Amacueca</div>
+        <div class="option-card primary-card">Amatitán</div>
+        <div class="option-card primary-card">Ameca</div>
+        <div class="option-card primary-card">Arandas</div>
+        <div class="option-card primary-card">Atemajac de Brizuela</div>
+        <div class="option-card primary-card">Atengo</div>
+        <div class="option-card primary-card">Atenguillo</div>
+        <div class="option-card primary-card">Atotonilco el Alto</div>
+        <div class="option-card primary-card">Atoyac</div>
+        <div class="option-card primary-card">Autlán de Navarro</div>
+      </div>
+      <button class="link2" id="backToStatesFromJalisco">Volver</button>
+    </div>
+  </div>
+
+  <!-- MICHOACÁN (25 principales) -->
+  <div id="michoacan" class="screen">
+    <div class="home-container">
+      <h1>Michoacán</h1>
+      <p>El estado de Michoacán está formado por 113 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Morelia</div>
+        <div class="option-card primary-card">Uruapan</div>
+        <div class="option-card primary-card">Zamora</div>
+        <div class="option-card primary-card">Lázaro Cárdenas</div>
+        <div class="option-card primary-card">Pátzcuaro</div>
+        <div class="option-card primary-card">Apatzingán</div>
+        <div class="option-card primary-card">Zitácuaro</div>
+        <div class="option-card primary-card">La Piedad</div>
+        <div class="option-card primary-card">Hidalgo</div>
+        <div class="option-card primary-card">Maravatío</div>
+        <div class="option-card primary-card">Sahuayo</div>
+        <div class="option-card primary-card">Jiquilpan</div>
+        <div class="option-card primary-card">Tacámbaro</div>
+        <div class="option-card primary-card">Paracho</div>
+        <div class="option-card primary-card">Purépero</div>
+        <div class="option-card primary-card">Cotija</div>
+        <div class="option-card primary-card">Tinguindín</div>
+        <div class="option-card primary-card">Los Reyes</div>
+        <div class="option-card primary-card">Buenavista</div>
+        <div class="option-card primary-card">Huandacareo</div>
+        <div class="option-card primary-card">Indaparapeo</div>
+        <div class="option-card primary-card">Charo</div>
+        <div class="option-card primary-card">Tlalpujahua</div>
+        <div class="option-card primary-card">Angangueo</div>
+        <div class="option-card primary-card">Tuxpan</div>
+      </div>
+      <button class="link2" id="backToStatesFromMichoacan">Volver</button>
+    </div>
+  </div>
+
+  <!-- MORELOS (Completo con 36 municipios) -->
+  <div id="morelos" class="screen">
+    <div class="home-container">
+      <h1>Morelos</h1>
+      <p>El estado de Morelos está formado por 36 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Cuernavaca</div>
+        <div class="option-card primary-card">Jiutepec</div>
+        <div class="option-card primary-card">Cuautla</div>
+        <div class="option-card primary-card">Temixco</div>
+        <div class="option-card primary-card">Yautepec</div>
+        <div class="option-card primary-card">Tepoztlán</div>
+        <div class="option-card primary-card">Jojutla</div>
+        <div class="option-card primary-card">Zacatepec</div>
+        <div class="option-card primary-card">Emiliano Zapata</div>
+        <div class="option-card primary-card">Tetecala</div>
+        <div class="option-card primary-card">Mazatepec</div>
+        <div class="option-card primary-card">Amacuzac</div>
+        <div class="option-card primary-card">Ayala</div>
+        <div class="option-card primary-card">Coatlán del Río</div>
+        <div class="option-card primary-card">Huitzilac</div>
+        <div class="option-card primary-card">Jantetelco</div>
+        <div class="option-card primary-card">Miacatlán</div>
+        <div class="option-card primary-card">Ocuituco</div>
+        <div class="option-card primary-card">Puente de Ixtla</div>
+        <div class="option-card primary-card">Temoac</div>
+        <div class="option-card primary-card">Tepalcingo</div>
+        <div class="option-card primary-card">Tequixquiac</div>
+        <div class="option-card primary-card">Tetela del Volcán</div>
+        <div class="option-card primary-card">Tlalnepantla</div>
+        <div class="option-card primary-card">Tlaltizapán</div>
+        <div class="option-card primary-card">Tlayacapan</div>
+        <div class="option-card primary-card">Totolapan</div>
+        <div class="option-card primary-card">Xochitepec</div>
+        <div class="option-card primary-card">Xoxocotla</div>
+        <div class="option-card primary-card">Yecapixtla</div>
+        <div class="option-card primary-card">Zacualpan</div>
+        <div class="option-card primary-card">Atlacahualoya</div>
+        <div class="option-card primary-card">Axochiapan</div>
+        <div class="option-card primary-card">Cocoyoc</div>
+        <div class="option-card primary-card">Jonacatepec</div>
+        <div class="option-card primary-card">Tlacotepec</div>
+      </div>
+      <button class="link2" id="backToStatesFromMorelos">Volver</button>
+    </div>
+  </div>
+
+  <!-- NAYARIT (Completo con 20 municipios) -->
+  <div id="nayarit" class="screen">
+    <div class="home-container">
+      <h1>Nayarit</h1>
+      <p>El estado de Nayarit está formado por 20 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Tepic</div>
+        <div class="option-card primary-card">Bahía de Banderas</div>
+        <div class="option-card primary-card">Compostela</div>
+        <div class="option-card primary-card">Santiago Ixcuintla</div>
+        <div class="option-card primary-card">San Blas</div>
+        <div class="option-card primary-card">Acaponeta</div>
+        <div class="option-card primary-card">Ahuacatlán</div>
+        <div class="option-card primary-card">Amatlán de Cañas</div>
+        <div class="option-card primary-card">Del Nayar</div>
+        <div class="option-card primary-card">Ixtlán del Río</div>
+        <div class="option-card primary-card">Jala</div>
+        <div class="option-card primary-card">La Yesca</div>
+        <div class="option-card primary-card">Rosamorada</div>
+        <div class="option-card primary-card">Ruíz</div>
+        <div class="option-card primary-card">San Pedro Lagunillas</div>
+        <div class="option-card primary-card">Santa María del Oro</div>
+        <div class="option-card primary-card">Tecuala</div>
+        <div class="option-card primary-card">Tuxpan</div>
+        <div class="option-card primary-card">Xalisco</div>
+        <div class="option-card primary-card">Huajicori</div>
+      </div>
+      <button class="link2" id="backToStatesFromNayarit">Volver</button>
+    </div>
+  </div>
+
+  <!-- NUEVO LEÓN (25 principales) -->
+  <div id="nuevoLeon" class="screen">
+    <div class="home-container">
+      <h1>Nuevo León</h1>
+      <p>El estado de Nuevo León está formado por 51 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Monterrey</div>
+        <div class="option-card primary-card">San Pedro Garza García</div>
+        <div class="option-card primary-card">Guadalupe</div>
+        <div class="option-card primary-card">San Nicolás de los Garza</div>
+        <div class="option-card primary-card">Apodaca</div>
+        <div class="option-card primary-card">General Escobedo</div>
+        <div class="option-card primary-card">Santa Catarina</div>
+        <div class="option-card primary-card">Juárez</div>
+        <div class="option-card primary-card">García</div>
+        <div class="option-card primary-card">Santiago</div>
+        <div class="option-card primary-card">Cadereyta Jiménez</div>
+        <div class="option-card primary-card">Linares</div>
+        <div class="option-card primary-card">Montemorelos</div>
+        <div class="option-card primary-card">Sabinas Hidalgo</div>
+        <div class="option-card primary-card">Anáhuac</div>
+        <div class="option-card primary-card">Allende</div>
+        <div class="option-card primary-card">Doctor Arroyo</div>
+        <div class="option-card primary-card">Doctor Coss</div>
+        <div class="option-card primary-card">El Carmen</div>
+        <div class="option-card primary-card">Galeana</div>
+        <div class="option-card primary-card">Hualahuises</div>
+        <div class="option-card primary-card">Iturbide</div>
+        <div class="option-card primary-card">Lampazos de Naranjo</div>
+        <div class="option-card primary-card">Los Ramones</div>
+        <div class="option-card primary-card">Mina</div>
+      </div>
+      <button class="link2" id="backToStatesFromNuevoLeon">Volver</button>
+    </div>
+  </div>
+
+  <!-- OAXACA (25 principales de 570) -->
+  <div id="oaxaca" class="screen">
+    <div class="home-container">
+      <h1>Oaxaca</h1>
+      <p>El estado de Oaxaca está formado por 570 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Oaxaca de Juárez</div>
+        <div class="option-card primary-card">Santa Cruz Xoxocotlán</div>
+        <div class="option-card primary-card">Santa Lucía del Camino</div>
+        <div class="option-card primary-card">San Sebastián Tutla</div>
+        <div class="option-card primary-card">Huajuapan de León</div>
+        <div class="option-card primary-card">Juchitán de Zaragoza</div>
+        <div class="option-card primary-card">Salina Cruz</div>
+        <div class="option-card primary-card">San Juan Bautista Tuxtepec</div>
+        <div class="option-card primary-card">San Pedro Mixtepec</div>
+        <div class="option-card primary-card">Santa María Huatulco</div>
+        <div class="option-card primary-card">San Pedro Pochutla</div>
+        <div class="option-card primary-card">Puerto Escondido</div>
+        <div class="option-card primary-card">Miahuatlán de Porfirio Díaz</div>
+        <div class="option-card primary-card">Tehuantepec</div>
+        <div class="option-card primary-card">Santo Domingo Tehuantepec</div>
+        <div class="option-card primary-card">Matías Romero</div>
+        <div class="option-card primary-card">Loma Bonita</div>
+        <div class="option-card primary-card">Acatlán de Pérez Figueroa</div>
+        <div class="option-card primary-card">San Pablo Villa de Mitla</div>
+        <div class="option-card primary-card">San Agustín de las Juntas</div>
+        <div class="option-card primary-card">San Andrés Huayapam</div>
+        <div class="option-card primary-card">San Antonio de la Cal</div>
+        <div class="option-card primary-card">San Bartolo Coyotepec</div>
+        <div class="option-card primary-card">San Jerónimo Tlacochahuaya</div>
+        <div class="option-card primary-card">San Juan Bautista Valle Nacional</div>
+      </div>
+      <button class="link2" id="backToStatesFromOaxaca">Volver</button>
+    </div>
+  </div>
+
+  <!-- PUEBLA (25 principales de 217) -->
+  <div id="puebla" class="screen">
+    <div class="home-container">
+      <h1>Puebla</h1>
+      <p>El estado de Puebla está formado por 217 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Puebla</div>
+        <div class="option-card primary-card">Tehuacán</div>
+        <div class="option-card primary-card">San Martín Texmelucan</div>
+        <div class="option-card primary-card">Atlixco</div>
+        <div class="option-card primary-card">San Pedro Cholula</div>
+        <div class="option-card primary-card">San Andrés Cholula</div>
+        <div class="option-card primary-card">Amozoc</div>
+        <div class="option-card primary-card">Huauchinango</div>
+        <div class="option-card primary-card">Izúcar de Matamoros</div>
+        <div class="option-card primary-card">Teziutlán</div>
+        <div class="option-card primary-card">Cuetzalan</div>
+        <div class="option-card primary-card">Cholula</div>
+        <div class="option-card primary-card">Zacatlán</div>
+        <div class="option-card primary-card">Zacapoaxtla</div>
+        <div class="option-card primary-card">Libres</div>
+        <div class="option-card primary-card">Acatlán</div>
+        <div class="option-card primary-card">Acatzingo</div>
+        <div class="option-card primary-card">Ajalpan</div>
+        <div class="option-card primary-card">Albino Zertuche</div>
+        <div class="option-card primary-card">Aljojuca</div>
+        <div class="option-card primary-card">Altepexi</div>
+        <div class="option-card primary-card">Amixtlán</div>
+        <div class="option-card primary-card">Atempan</div>
+        <div class="option-card primary-card">Atexcal</div>
+        <div class="option-card primary-card">Atlequizayan</div>
+      </div>
+      <button class="link2" id="backToStatesFromPuebla">Volver</button>
+    </div>
+  </div>
+
+  <!-- QUERÉTARO (Completo con 18 municipios) -->
+  <div id="queretaro" class="screen">
+    <div class="home-container">
+      <h1>Querétaro</h1>
+      <p>El estado de Querétaro está formado por 18 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Querétaro</div>
+        <div class="option-card primary-card">San Juan del Río</div>
+        <div class="option-card primary-card">Corregidora</div>
+        <div class="option-card primary-card">El Marqués</div>
+        <div class="option-card primary-card">Tequisquiapan</div>
+        <div class="option-card primary-card">Cadereyta de Montes</div>
+        <div class="option-card primary-card">Jalpan de Serra</div>
+        <div class="option-card primary-card">Amealco de Bonfil</div>
+        <div class="option-card primary-card">Pedro Escobedo</div>
+        <div class="option-card primary-card">Colón</div>
+        <div class="option-card primary-card">Peñamiller</div>
+        <div class="option-card primary-card">Pinal de Amoles</div>
+        <div class="option-card primary-card">Huimilpan</div>
+        <div class="option-card primary-card">Ezequiel Montes</div>
+        <div class="option-card primary-card">Landa de Matamoros</div>
+        <div class="option-card primary-card">Tolimán</div>
+        <div class="option-card primary-card">Arroyo Seco</div>
+        <div class="option-card primary-card">San Joaquín</div>
+      </div>
+      <button class="link2" id="backToStatesFromQueretaro">Volver</button>
+    </div>
+  </div>
+
+  <!-- QUINTANA ROO (Completo con 11 municipios) -->
+  <div id="quintanaRoo" class="screen">
+    <div class="home-container">
+      <h1>Quintana Roo</h1>
+      <p>El estado de Quintana Roo está formado por 11 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Benito Juárez (Cancún)</div>
+        <div class="option-card primary-card">Solidaridad (Playa del Carmen)</div>
+        <div class="option-card primary-card">Tulum</div>
+        <div class="option-card primary-card">Cozumel</div>
+        <div class="option-card primary-card">Isla Mujeres</div>
+        <div class="option-card primary-card">Puerto Morelos</div>
+        <div class="option-card primary-card">Othón P. Blanco (Chetumal)</div>
+        <div class="option-card primary-card">Bacalar</div>
+        <div class="option-card primary-card">Felipe Carrillo Puerto</div>
+        <div class="option-card primary-card">José María Morelos</div>
+        <div class="option-card primary-card">Lázaro Cárdenas</div>
+      </div>
+      <button class="link2" id="backToStatesFromQuintanaRoo">Volver</button>
+    </div>
+  </div>
+
+  <!-- SAN LUIS POTOSÍ (25 principales de 58) -->
+  <div id="sanLuisPotosi" class="screen">
+    <div class="home-container">
+      <h1>San Luis Potosí</h1>
+      <p>El estado de San Luis Potosí está formado por 58 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">San Luis Potosí</div>
+        <div class="option-card primary-card">Soledad de Graciano Sánchez</div>
+        <div class="option-card primary-card">Ciudad Valles</div>
+        <div class="option-card primary-card">Matehuala</div>
+        <div class="option-card primary-card">Rioverde</div>
+        <div class="option-card primary-card">Tamazunchale</div>
+        <div class="option-card primary-card">Tamuín</div>
+        <div class="option-card primary-card">Xilitla</div>
+        <div class="option-card primary-card">Cerritos</div>
+        <div class="option-card primary-card">Ébano</div>
+        <div class="option-card primary-card">Tamalín</div>
+        <div class="option-card primary-card">Tancanhuitz</div>
+        <div class="option-card primary-card">Tanlajás</div>
+        <div class="option-card primary-card">Tanquían de Escobedo</div>
+        <div class="option-card primary-card">Tierra Nueva</div>
+        <div class="option-card primary-card">Vanegas</div>
+        <div class="option-card primary-card">Venado</div>
+        <div class="option-card primary-card">Villa de Arista</div>
+        <div class="option-card primary-card">Villa de Arriaga</div>
+        <div class="option-card primary-card">Villa de Guadalupe</div>
+        <div class="option-card primary-card">Villa de la Paz</div>
+        <div class="option-card primary-card">Villa de Ramos</div>
+        <div class="option-card primary-card">Villa de Reyes</div>
+        <div class="option-card primary-card">Villa Hidalgo</div>
+        <div class="option-card primary-card">Villa Juárez</div>
+      </div>
+      <button class="link2" id="backToStatesFromSLP">Volver</button>
+    </div>
+  </div>
+
+  <!-- SINALOA (Completo con 20 municipios) -->
+  <div id="sinaloa" class="screen">
+    <div class="home-container">
+      <h1>Sinaloa</h1>
+      <p>El estado de Sinaloa está formado por 20 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Culiacán</div>
+        <div class="option-card primary-card">Mazatlán</div>
+        <div class="option-card primary-card">Ahome</div>
+        <div class="option-card primary-card">Guasave</div>
+        <div class="option-card primary-card">Navolato</div>
+        <div class="option-card primary-card">El Fuerte</div>
+        <div class="option-card primary-card">Escuinapa</div>
+        <div class="option-card primary-card">Concordia</div>
+        <div class="option-card primary-card">Rosario</div>
+        <div class="option-card primary-card">Angostura</div>
+        <div class="option-card primary-card">Badiraguato</div>
+        <div class="option-card primary-card">Choix</div>
+        <div class="option-card primary-card">Cosalá</div>
+        <div class="option-card primary-card">Elota</div>
+        <div class="option-card primary-card">Juan José Ríos</div>
+        <div class="option-card primary-card">Eldorado</div>
+        <div class="option-card primary-card">Mocorito</div>
+        <div class="option-card primary-card">Salvador Alvarado</div>
+        <div class="option-card primary-card">San Ignacio</div>
+        <div class="option-card primary-card">Sinaloa</div>
+      </div>
+      <button class="link2" id="backToStatesFromSinaloa">Volver</button>
+    </div>
+  </div>
+
+  <!-- SONORA (25 principales de 72) -->
+  <div id="sonora" class="screen">
+    <div class="home-container">
+      <h1>Sonora</h1>
+      <p>El estado de Sonora está formado por 72 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Hermosillo</div>
+        <div class="option-card primary-card">Nogales</div>
+        <div class="option-card primary-card">Cajeme</div>
+        <div class="option-card primary-card">San Luis Río Colorado</div>
+        <div class="option-card primary-card">Guaymas</div>
+        <div class="option-card primary-card">Navojoa</div>
+        <div class="option-card primary-card">Empalme</div>
+        <div class="option-card primary-card">Cananea</div>
+        <div class="option-card primary-card">Agua Prieta</div>
+        <div class="option-card primary-card">Puerto Peñasco</div>
+        <div class="option-card primary-card">Huatabampo</div>
+        <div class="option-card primary-card">Etchojoa</div>
+        <div class="option-card primary-card">Magdalena</div>
+        <div class="option-card primary-card">Altar</div>
+        <div class="option-card primary-card">Caborca</div>
+        <div class="option-card primary-card">Benito Juárez</div>
+        <div class="option-card primary-card">Benjamín Hill</div>
+        <div class="option-card primary-card">Bácum</div>
+        <div class="option-card primary-card">Bavispe</div>
+        <div class="option-card primary-card">Cumpas</div>
+        <div class="option-card primary-card">Divisaderos</div>
+        <div class="option-card primary-card">Fronteras</div>
+        <div class="option-card primary-card">Granados</div>
+        <div class="option-card primary-card">Imuris</div>
+        <div class="option-card primary-card">La Colorada</div>
+      </div>
+      <button class="link2" id="backToStatesFromSonora">Volver</button>
+    </div>
+  </div>
+
+  <!-- TABASCO (Completo con 17 municipios) -->
+  <div id="tabasco" class="screen">
+    <div class="home-container">
+      <h1>Tabasco</h1>
+      <p>El estado de Tabasco está formado por 17 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Centro</div>
+        <div class="option-card primary-card">Cárdenas</div>
+        <div class="option-card primary-card">Comalcalco</div>
+        <div class="option-card primary-card">Huimanguillo</div>
+        <div class="option-card primary-card">Macuspana</div>
+        <div class="option-card primary-card">Paraíso</div>
+        <div class="option-card primary-card">Tenosique</div>
+        <div class="option-card primary-card">Jalpa de Méndez</div>
+        <div class="option-card primary-card">Teapa</div>
+        <div class="option-card primary-card">Nacajuca</div>
+        <div class="option-card primary-card">Balancán</div>
+        <div class="option-card primary-card">Centla</div>
+        <div class="option-card primary-card">Emiliano Zapata</div>
+        <div class="option-card primary-card">Jonuta</div>
+        <div class="option-card primary-card">Tacotalpa</div>
+        <div class="option-card primary-card">Cunduacán</div>
+        <div class="option-card primary-card">Jalpa</div>
+      </div>
+      <button class="link2" id="backToStatesFromTabasco">Volver</button>
+    </div>
+  </div>
+
+  <!-- TAMAULIPAS (25 principales de 43) -->
+  <div id="tamaulipas" class="screen">
+    <div class="home-container">
+      <h1>Tamaulipas</h1>
+      <p>El estado de Tamaulipas está formado por 43 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Reynosa</div>
+        <div class="option-card primary-card">Matamoros</div>
+        <div class="option-card primary-card">Nuevo Laredo</div>
+        <div class="option-card primary-card">Tampico</div>
+        <div class="option-card primary-card">Ciudad Victoria</div>
+        <div class="option-card primary-card">Altamira</div>
+        <div class="option-card primary-card">Madero</div>
+        <div class="option-card primary-card">Río Bravo</div>
+        <div class="option-card primary-card">Valle Hermoso</div>
+        <div class="option-card primary-card">El Mante</div>
+        <div class="option-card primary-card">San Fernando</div>
+        <div class="option-card primary-card">González</div>
+        <div class="option-card primary-card">Güémez</div>
+        <div class="option-card primary-card">Guerrero</div>
+        <div class="option-card primary-card">Gustavo Díaz Ordaz</div>
+        <div class="option-card primary-card">Hidalgo</div>
+        <div class="option-card primary-card">Jaumave</div>
+        <div class="option-card primary-card">Jiménez</div>
+        <div class="option-card primary-card">Llera</div>
+        <div class="option-card primary-card">Mainero</div>
+        <div class="option-card primary-card">Mier</div>
+        <div class="option-card primary-card">Miguel Alemán</div>
+        <div class="option-card primary-card">Miquihuana</div>
+        <div class="option-card primary-card">Ocampo</div>
+        <div class="option-card primary-card">Padilla</div>
+      </div>
+      <button class="link2" id="backToStatesFromTamaulipas">Volver</button>
+    </div>
+  </div>
+
+  <!-- TLAXCALA (25 principales de 60) -->
+  <div id="tlaxcala" class="screen">
+    <div class="home-container">
+      <h1>Tlaxcala</h1>
+      <p>El estado de Tlaxcala está formado por 60 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Tlaxcala</div>
+        <div class="option-card primary-card">Apizaco</div>
+        <div class="option-card primary-card">Huamantla</div>
+        <div class="option-card primary-card">Chiautempan</div>
+        <div class="option-card primary-card">Zacatelco</div>
+        <div class="option-card primary-card">Calpulalpan</div>
+        <div class="option-card primary-card">Tlaxco</div>
+        <div class="option-card primary-card">San Pablo del Monte</div>
+        <div class="option-card primary-card">Contla de Juan Cuamatzi</div>
+        <div class="option-card primary-card">Santa Cruz Tlaxcala</div>
+        <div class="option-card primary-card">Amaxac de Guerrero</div>
+        <div class="option-card primary-card">Tepetitla de Lardizábal</div>
+        <div class="option-card primary-card">Natívitas</div>
+        <div class="option-card primary-card">Xaloztoc</div>
+        <div class="option-card primary-card">Xicohtzinco</div>
+        <div class="option-card primary-card">Yauhquemecan</div>
+        <div class="option-card primary-card">Acuamanala de Miguel Hidalgo</div>
+        <div class="option-card primary-card">Altzayanca</div>
+        <div class="option-card primary-card">Apetatitlán de Antonio Carvajal</div>
+        <div class="option-card primary-card">Atlangatepec</div>
+        <div class="option-card primary-card">Atltzayanca</div>
+        <div class="option-card primary-card">Benito Juárez</div>
+        <div class="option-card primary-card">Cuapiaxtla</div>
+        <div class="option-card primary-card">Cuaxomulco</div>
+        <div class="option-card primary-card">El Carmen Tequexquitla</div>
+      </div>
+      <button class="link2" id="backToStatesFromTlaxcala">Volver</button>
+    </div>
+  </div>
+
+  <!-- VERACRUZ (25 principales de 212) -->
+  <div id="veracruz" class="screen">
+    <div class="home-container">
+      <h1>Veracruz</h1>
+      <p>El estado de Veracruz está formado por 212 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Veracruz</div>
+        <div class="option-card primary-card">Xalapa</div>
+        <div class="option-card primary-card">Coatzacoalcos</div>
+        <div class="option-card primary-card">Poza Rica</div>
+        <div class="option-card primary-card">Córdoba</div>
+        <div class="option-card primary-card">Orizaba</div>
+        <div class="option-card primary-card">Boca del Río</div>
+        <div class="option-card primary-card">Minatitlán</div>
+        <div class="option-card primary-card">Papantla</div>
+        <div class="option-card primary-card">Tuxpan</div>
+        <div class="option-card primary-card">Fortín</div>
+        <div class="option-card primary-card">Álamo Temapache</div>
+        <div class="option-card primary-card">San Andrés Tuxtla</div>
+        <div class="option-card primary-card">Tantoyuca</div>
+        <div class="option-card primary-card">Martínez de la Torre</div>
+        <div class="option-card primary-card">Perote</div>
+        <div class="option-card primary-card">Zongolica</div>
+        <div class="option-card primary-card">Cosamaloapan</div>
+        <div class="option-card primary-card">Coscomatepec</div>
+        <div class="option-card primary-card">Carlos A. Carrillo</div>
+        <div class="option-card primary-card">Catemaco</div>
+        <div class="option-card primary-card">Cerro Azul</div>
+        <div class="option-card primary-card">Chiconquiaco</div>
+        <div class="option-card primary-card">Chicontepec</div>
+        <div class="option-card primary-card">Chinameca</div>
+      </div>
+      <button class="link2" id="backToStatesFromVeracruz">Volver</button>
+    </div>
+  </div>
+
+  <!-- YUCATÁN (25 principales de 106) -->
+  <div id="yucatan" class="screen">
+    <div class="home-container">
+      <h1>Yucatán</h1>
+      <p>El estado de Yucatán está formado por 106 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Mérida</div>
+        <div class="option-card primary-card">Valladolid</div>
+        <div class="option-card primary-card">Tizimín</div>
+        <div class="option-card primary-card">Progreso</div>
+        <div class="option-card primary-card">Umán</div>
+        <div class="option-card primary-card">Tekax</div>
+        <div class="option-card primary-card">Ticul</div>
+        <div class="option-card primary-card">Kanasín</div>
+        <div class="option-card primary-card">Hunucmá</div>
+        <div class="option-card primary-card">Motul</div>
+        <div class="option-card primary-card">Oxkutzcab</div>
+        <div class="option-card primary-card">Acanceh</div>
+        <div class="option-card primary-card">Baca</div>
+        <div class="option-card primary-card">Buctzotz</div>
+        <div class="option-card primary-card">Cacalchén</div>
+        <div class="option-card primary-card">Calotmul</div>
+        <div class="option-card primary-card">Cansahcab</div>
+        <div class="option-card primary-card">Cantamayec</div>
+        <div class="option-card primary-card">Celestún</div>
+        <div class="option-card primary-card">Cenotillo</div>
+        <div class="option-card primary-card">Chacsinkín</div>
+        <div class="option-card primary-card">Chankom</div>
+        <div class="option-card primary-card">Chapab</div>
+        <div class="option-card primary-card">Chemax</div>
+        <div class="option-card primary-card">Chichimilá</div>
+      </div>
+      <button class="link2" id="backToStatesFromYucatan">Volver</button>
+    </div>
+  </div>
+
+  <!-- ZACATECAS (25 principales de 58) -->
+  <div id="zacatecas" class="screen">
+    <div class="home-container">
+      <h1>Zacatecas</h1>
+      <p>El estado de Zacatecas está formado por 58 municipios. Elige uno para continuar.</p>
+      <div class="states-list">
+        <div class="option-card primary-card">Zacatecas</div>
+        <div class="option-card primary-card">Guadalupe</div>
+        <div class="option-card primary-card">Fresnillo</div>
+        <div class="option-card primary-card">Jerez</div>
+        <div class="option-card primary-card">Calera</div>
+        <div class="option-card primary-card">Sombrerete</div>
+        <div class="option-card primary-card">Río Grande</div>
+        <div class="option-card primary-card">Loreto</div>
+        <div class="option-card primary-card">Ojocaliente</div>
+        <div class="option-card primary-card">Nochistlán</div>
+        <div class="option-card primary-card">Tlaltenango de Sánchez Román</div>
+        <div class="option-card primary-card">Villanueva</div>
+        <div class="option-card primary-card">Pinos</div>
+        <div class="option-card primary-card">Valparaíso</div>
+        <div class="option-card primary-card">Concepción del Oro</div>
+        <div class="option-card primary-card">Jiménez del Teul</div>
+        <div class="option-card primary-card">General Enrique Estrada</div>
+        <div class="option-card primary-card">General Francisco R. Murguía</div>
+        <div class="option-card primary-card">General Pánfilo Natera</div>
+        <div class="option-card primary-card">Huanusco</div>
+        <div class="option-card primary-card">Jalpa</div>
+        <div class="option-card primary-card">Juchipila</div>
+        <div class="option-card primary-card">Mazapil</div>
+        <div class="option-card primary-card">Mezquital del Oro</div>
+        <div class="option-card primary-card">Momax</div>
+      </div>
+      <button class="link2" id="backToStatesFromZacatecas">Volver</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
