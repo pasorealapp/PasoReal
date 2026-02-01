@@ -1,25 +1,225 @@
 // ================================
-// CONFIGURACIÓN DE RUTAS
+// CONFIGURACIÓN DE RUTAS POR ESTADO (UNIFICADO)
 // ================================
-const ROUTES = {
-  maleconLaPaz: {
-    name: "Malecón de La Paz",
-    video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/8aa913ae75d3814cce9a27bd280d2c4a/manifest/video.m3u8",
-    start: [24.15555, -110.3224],
-    end: [24.1679, -110.3091],
-    maxKm: 3
+
+// OBJETO ÚNICO DE RUTAS
+const RUTAS = {
+  // BAJA CALIFORNIA
+  baja_california: {
+    tijuanaRevolucion: {
+      name: "Av. Revolución",
+      video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/TU_VIDEO_TIJUANA_1/manifest/video.m3u8",
+      start: [32.5331, -117.0382],
+      end: [32.5348, -117.0361],
+      maxKm: 1.4,
+      achievement: {
+        title: "Explorador de Tijuana",
+        description: "Recorrido completado por la Avenida Revolución"
+      }
+    },
+
+    tijuanaPlayas: {
+      name: "Playas de Tijuana",
+      video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/TU_VIDEO_TIJUANA_2/manifest/video.m3u8",
+      start: [32.5280, -117.1236],
+      end: [32.5260, -117.1200],
+      maxKm: 2.0,
+      achievement: {
+        title: "Caminante del Pacífico",
+        description: "Recorrido completado en Playas de Tijuana"
+      }
+    },
+
+    tijuanaCentro: {
+      name: "Centro de Tijuana",
+      video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/TU_VIDEO_TIJUANA_3/manifest/video.m3u8",
+      start: [32.5310, -117.0390],
+      end: [32.5335, -117.0365],
+      maxKm: 1.2,
+      achievement: {
+        title: "Corazón de Tijuana",
+        description: "Recorrido completado por el centro de la ciudad"
+      }
+    }
   },
 
-  centroHistorico: {
-    name: "Centro Histórico",
-    video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/8aa913ae75d3814cce9a27bd280d2c4a/manifest/video.m3u8",
-    start: [24.1605, -110.3128],
-    end: [24.1630, -110.3095],
-    maxKm: 1.2
+  // BAJA CALIFORNIA SUR
+  baja_california_sur: {
+    maleconLaPaz: {
+      name: "Malecón de La Paz",
+      video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/8aa913ae75d3814cce9a27bd280d2c4a/manifest/video.m3u8",
+      start: [24.15555, -110.3224],
+      end: [24.1679, -110.3091],
+      maxKm: 3,
+      achievement: {
+        title: "Explorador del Malecón",
+        description: "Primera caminata completada en el Malecón de La Paz"
+      }
+    },
+
+    centroHistorico: {
+      name: "Centro Histórico",
+      video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/8aa913ae75d3814cce9a27bd280d2c4a/manifest/video.m3u8",
+      start: [24.1605, -110.3128],
+      end: [24.1630, -110.3095],
+      maxKm: 1.2,
+      achievement: {
+        title: "Explorador del Centro Histórico",
+        description: "Recorrido completado por el Centro Histórico"
+      }
+    }
   }
 };
 
+// Variables globales
 let currentRoute = null;
+let lastRoutesScreen = null;
+let currentEstado = null;
+
+// Variables para manejo de permisos iOS
+let motionPermissionGranted = false;
+let isIOS = false;
+
+// ================================
+// DETECCIÓN Y MANEJO DE iOS
+// ================================
+
+// Función para detectar iOS
+function detectIOS() {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isWebKit = 'WebkitAppearance' in document.documentElement.style;
+  
+  return (isIOSDevice || isSafari || isWebKit);
+}
+
+// Función para verificar si necesita permisos
+function needsMotionPermission() {
+  if (!isIOS) return false;
+  return typeof DeviceMotionEvent !== 'undefined' && 
+         typeof DeviceMotionEvent.requestPermission === 'function';
+}
+
+// Función para mostrar/ocultar overlay de permisos
+function showIOSPermissionOverlay(show) {
+  const overlay = document.getElementById('iosPermissionOverlay');
+  if (overlay) {
+    overlay.style.display = show ? 'flex' : 'none';
+  }
+}
+
+// Configurar A-Frame para iOS
+function configureAFrameForIOS() {
+  const scene = document.querySelector('a-scene');
+  if (!scene) return;
+  
+  scene.setAttribute('device-orientation-permission-ui', 'enabled: false');
+  
+  const camera = document.querySelector('a-camera');
+  if (camera) {
+    camera.setAttribute('look-controls', {
+      enabled: true,
+      touchEnabled: true,
+      mouseEnabled: true,
+      pointerLockEnabled: false
+    });
+  }
+}
+
+// Solicitar permisos de movimiento
+async function requestMotionPermission() {
+  try {
+    if (typeof DeviceMotionEvent.requestPermission !== 'function') {
+      return 'unsupported';
+    }
+    
+    const response = await DeviceMotionEvent.requestPermission();
+    
+    if (response === 'granted') {
+      motionPermissionGranted = true;
+      
+      if (typeof DeviceOrientationEvent !== 'undefined' && 
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        try {
+          await DeviceOrientationEvent.requestPermission();
+        } catch (orientationErr) {
+          console.warn('⚠️ No se pudo obtener permiso de orientación:', orientationErr);
+        }
+      }
+      
+      configureAFrameForIOS();
+      return 'granted';
+    } else {
+      return 'denied';
+    }
+  } catch (error) {
+    console.error('❌ Error solicitando permiso de movimiento:', error);
+    return 'error';
+  }
+}
+
+// ================================
+// INICIO DE VIDEO CON PERMISOS iOS
+// ================================
+async function startVideoWithPermissions() {
+  console.log('🎬 Iniciando video con manejo de permisos...');
+  
+  isIOS = detectIOS();
+  console.log(`📱 Es iOS: ${isIOS}`);
+  
+  if (isIOS) {
+    configureAFrameForIOS();
+    
+    if (needsMotionPermission()) {
+      console.log('📱 iOS detectado, necesita permisos de movimiento');
+      
+      setTimeout(() => {
+        showIOSPermissionOverlay(true);
+        
+        const enableBtn = document.getElementById('enableMotion');
+        const skipBtn = document.getElementById('skipMotion');
+        
+        if (enableBtn) {
+          enableBtn.onclick = async () => {
+            console.log('📱 Solicitando permiso de movimiento...');
+            const result = await requestMotionPermission();
+            
+            if (result === 'granted') {
+              showIOSPermissionOverlay(false);
+              console.log('✅ Permiso concedido, video 360° activado');
+              
+              if (malecon360.paused) {
+                try {
+                  await malecon360.play();
+                  videoStarted = true;
+                } catch (e) {
+                  console.error('❌ Error iniciando video:', e);
+                }
+              }
+            } else {
+              alert('Para la experiencia 360° completa, necesitas conceder permisos de movimiento.');
+            }
+          };
+        }
+        
+        if (skipBtn) {
+          skipBtn.onclick = () => {
+            console.log('📱 Usuario omitió permisos 360°');
+            showIOSPermissionOverlay(false);
+            setupManualControls();
+          };
+        }
+      }, 1000);
+    }
+  } else {
+    showIOSPermissionOverlay(false);
+    const scene = document.querySelector('a-scene');
+    if (scene) {
+      scene.setAttribute('vr-mode-ui', 'enabled: true');
+    }
+  }
+}
 
 // ================================
 // VARIABLES GLOBALES
@@ -121,118 +321,191 @@ if (login.classList.contains("active")) {
 }
 
 // ================================
-// SISTEMA DE NAVEGACIÓN PARA ESTADOS
+// SISTEMA DE NAVEGACIÓN JERÁRQUICO
 // ================================
-const estadosMap = {
-  "Aguascalientes": { id: "aguascalientes", back: "backToStatesFromAgs" },
-  "Baja California": { id: "bajaCalifornia", back: "backToStatesFromBC" },
-  "Baja California Sur": { id: "bajaCaliforniaSur", back: "backToStatesFromBCS" },
-  "Campeche": { id: "campeche", back: "backToStatesFromCampeche" },
-  "Chiapas": { id: "chiapas", back: "backToStatesFromChiapas" },
-  "Chihuahua": { id: "chihuahua", back: "backToStatesFromChihuahua" },
-  "Ciudad de México": { id: "cdmx", back: "backToStatesFromCDMX" },
-  "Coahuila": { id: "coahuila", back: "backToStatesFromCoahuila" },
-  "Colima": { id: "colima", back: "backToStatesFromColima" },
-  "Durango": { id: "durango", back: "backToStatesFromDurango" },
-  "Estado de México": { id: "edomex", back: "backToStatesFromEdomex" },
-  "Guanajuato": { id: "guanajuato", back: "backToStatesFromGuanajuato" },
-  "Guerrero": { id: "guerrero", back: "backToStatesFromGuerrero" },
-  "Hidalgo": { id: "hidalgo", back: "backToStatesFromHidalgo" },
-  "Jalisco": { id: "jalisco", back: "backToStatesFromJalisco" },
-  "Michoacán": { id: "michoacan", back: "backToStatesFromMichoacan" },
-  "Morelos": { id: "morelos", back: "backToStatesFromMorelos" },
-  "Nayarit": { id: "nayarit", back: "backToStatesFromNayarit" },
-  "Nuevo León": { id: "nuevoLeon", back: "backToStatesFromNuevoLeon" },
-  "Oaxaca": { id: "oaxaca", back: "backToStatesFromOaxaca" },
-  "Puebla": { id: "puebla", back: "backToStatesFromPuebla" },
-  "Querétaro": { id: "queretaro", back: "backToStatesFromQueretaro" },
-  "Quintana Roo": { id: "quintanaRoo", back: "backToStatesFromQuintanaRoo" },
-  "San Luis Potosí": { id: "sanLuisPotosi", back: "backToStatesFromSLP" },
-  "Sinaloa": { id: "sinaloa", back: "backToStatesFromSinaloa" },
-  "Sonora": { id: "sonora", back: "backToStatesFromSonora" },
-  "Tabasco": { id: "tabasco", back: "backToStatesFromTabasco" },
-  "Tamaulipas": { id: "tamaulipas", back: "backToStatesFromTamaulipas" },
-  "Tlaxcala": { id: "tlaxcala", back: "backToStatesFromTlaxcala" },
-  "Veracruz": { id: "veracruz", back: "backToStatesFromVeracruz" },
-  "Yucatán": { id: "yucatan", back: "backToStatesFromYucatan" },
-  "Zacatecas": { id: "zacatecas", back: "backToStatesFromZacatecas" }
+
+// Configuración completa de navegación
+const navegacionCompleta = {
+  estados: {
+    "Aguascalientes": { 
+      id: "aguascalientes", 
+      back: "backToStatesFromAgs"
+    },
+    
+    "Baja California": { 
+      id: "bajaCalifornia", 
+      back: "backToStatesFromBC",
+      estadoKey: "baja_california",
+      municipios: {
+        "Tijuana": { 
+          id: "tijuanaRutas", 
+          back: "backToBCFromTijuana",
+          rutas: true
+        },
+        "Mexicali": { id: "mexicaliRutas", back: "backToBCFromMexicali" },
+        "Ensenada": { id: "ensenadaRutas", back: "backToBCFromEnsenada" },
+        "Tecate": { id: "tecateRutas", back: "backToBCFromTecate" },
+        "Playas de Rosarito": { id: "rosaritoRutas", back: "backToBCFromRosarito" },
+        "San Quintín": { id: "sanQuintinRutas", back: "backToBCFromSanQuintin" },
+        "San Felipe": { id: "sanFelipeRutas", back: "backToBCFromSanFelipe" }
+      }
+    },
+    
+    "Baja California Sur": { 
+      id: "bajaCaliforniaSur", 
+      back: "backToStatesFromBCS",
+      estadoKey: "baja_california_sur",
+      municipios: {
+        "La Paz": { 
+          id: "laPazZonas", 
+          back: "backToBCSFromLaPazZonas",
+          zonas: {
+            "La Paz (Ciudad)": { 
+              id: "laPazCiudadRutas", 
+              back: "backToLaPazZonasFromCiudad",
+              rutas: true
+            },
+            "Todos Santos": { 
+              id: "todosSantosRutas", 
+              back: "backToLaPazZonasFromTodosSantos" 
+            }
+          }
+        },
+        "Los Cabos": { 
+          id: "losCabos", 
+          back: "backToBCSFromLosCabos",
+          zonas: {
+            "Cabo San Lucas": { 
+              id: "caboSanLucasRutas", 
+              back: "backToLosCabosFromCSL" 
+            },
+            "San José del Cabo": { 
+              id: "sanJoseDelCaboRutas", 
+              back: "backToLosCabosFromSJC" 
+            }
+          }
+        },
+        "Comondú": { id: "comonduRutas", back: "backToBCSFromComondu" },
+        "Loreto": { id: "loretoRutas", back: "backToBCSFromLoreto" },
+        "Mulegé": { id: "mulegeRutas", back: "backToBCSFromMulege" }
+      }
+    },
+    
+    // Configuración para los demás estados...
+    "Campeche": { id: "campeche", back: "backToStatesFromCampeche" },
+    "Chiapas": { id: "chiapas", back: "backToStatesFromChiapas" },
+    "Chihuahua": { id: "chihuahua", back: "backToStatesFromChihuahua" },
+    "Ciudad de México": { id: "cdmx", back: "backToStatesFromCDMX" },
+    "Coahuila": { id: "coahuila", back: "backToStatesFromCoahuila" },
+    "Colima": { id: "colima", back: "backToStatesFromColima" },
+    "Durango": { id: "durango", back: "backToStatesFromDurango" },
+    "Estado de México": { id: "edomex", back: "backToStatesFromEdomex" },
+    "Guanajuato": { id: "guanajuato", back: "backToStatesFromGuanajuato" },
+    "Guerrero": { id: "guerrero", back: "backToStatesFromGuerrero" },
+    "Hidalgo": { id: "hidalgo", back: "backToStatesFromHidalgo" },
+    "Jalisco": { id: "jalisco", back: "backToStatesFromJalisco" },
+    "Michoacán": { id: "michoacan", back: "backToStatesFromMichoacan" },
+    "Morelos": { id: "morelos", back: "backToStatesFromMorelos" },
+    "Nayarit": { id: "nayarit", back: "backToStatesFromNayarit" },
+    "Nuevo León": { id: "nuevoLeon", back: "backToStatesFromNuevoLeon" },
+    "Oaxaca": { id: "oaxaca", back: "backToStatesFromOaxaca" },
+    "Puebla": { id: "puebla", back: "backToStatesFromPuebla" },
+    "Querétaro": { id: "queretaro", back: "backToStatesFromQueretaro" },
+    "Quintana Roo": { id: "quintanaRoo", back: "backToStatesFromQuintanaRoo" },
+    "San Luis Potosí": { id: "sanLuisPotosi", back: "backToStatesFromSLP" },
+    "Sinaloa": { id: "sinaloa", back: "backToStatesFromSinaloa" },
+    "Sonora": { id: "sonora", back: "backToStatesFromSonora" },
+    "Tabasco": { id: "tabasco", back: "backToStatesFromTabasco" },
+    "Tamaulipas": { id: "tamaulipas", back: "backToStatesFromTamaulipas" },
+    "Tlaxcala": { id: "tlaxcala", back: "backToStatesFromTlaxcala" },
+    "Veracruz": { id: "veracruz", back: "backToStatesFromVeracruz" },
+    "Yucatán": { id: "yucatan", back: "backToStatesFromYucatan" },
+    "Zacatecas": { id: "zacatecas", back: "backToStatesFromZacatecas" }
+  }
 };
 
-// Configurar navegación para todos los estados
-Object.entries(estadosMap).forEach(([estadoNombre, config]) => {
-  document.querySelectorAll("#states .option-card").forEach(card => {
-    if (card.innerText.trim() === estadoNombre) {
-      card.onclick = () => {
-        states.classList.remove("active");
-        document.getElementById(config.id).classList.add("active");
-      };
+// Función para configurar navegación
+function configurarNavegacion(config, nivel = "states", padre = null) {
+  Object.entries(config).forEach(([nombre, info]) => {
+    const { id, back, estadoKey } = info;
+    
+    // Configurar navegación hacia adelante
+    document.querySelectorAll(`#${nivel} .option-card`).forEach(card => {
+      if (card.innerText.trim() === nombre) {
+        card.onclick = () => {
+          document.querySelector(`#${nivel}`).classList.remove("active");
+          document.getElementById(id).classList.add("active");
+          
+          if (info.rutas) {
+            lastRoutesScreen = id;
+            currentEstado = estadoKey || padre;
+          }
+        };
+      }
+    });
+    
+    // Configurar botón de regreso
+    if (back) {
+      const backBtn = document.getElementById(back);
+      if (backBtn) {
+        backBtn.onclick = () => {
+          document.getElementById(id).classList.remove("active");
+          document.querySelector(`#${nivel}`).classList.add("active");
+        };
+      }
+    }
+    
+    // Configurar niveles inferiores
+    if (info.municipios) {
+      configurarNavegacion(info.municipios, id, estadoKey);
+    }
+    
+    if (info.zonas) {
+      configurarNavegacion(info.zonas, id, estadoKey);
     }
   });
+}
 
-  const backBtn = document.getElementById(config.back);
-  if (backBtn) {
-    backBtn.onclick = () => {
-      document.getElementById(config.id).classList.remove("active");
-      states.classList.add("active");
-    };
-  }
-});
+// Inicializar navegación
+configurarNavegacion(navegacionCompleta.estados);
 
 // ================================
-// BAJA CALIFORNIA SUR
+// CONFIGURACIÓN DE BOTONES DE RUTAS
 // ================================
-const bajaCaliforniaSur = document.getElementById("bajaCaliforniaSur");
 
-document.querySelectorAll("#states .option-card").forEach(card => {
-  if (card.innerText.trim() === "Baja California Sur") {
-    card.onclick = () => {
-      states.classList.remove("active");
-      bajaCaliforniaSur.classList.add("active");
-    };
-  }
-});
-
-document.getElementById("backToStatesFromBCS").onclick = () => {
-  bajaCaliforniaSur.classList.remove("active");
-  states.classList.add("active");
+// Tijuana
+const tijuanaRutasConfig = {
+  "Av. Revolución": { id: "goToTijuanaRevolucion", rutaKey: "tijuanaRevolucion" },
+  "Playas de Tijuana": { id: "goToTijuanaPlayas", rutaKey: "tijuanaPlayas" },
+  "Centro de Tijuana": { id: "goToTijuanaCentro", rutaKey: "tijuanaCentro" }
 };
 
-// ===== La Paz =====
-const laPazZonas = document.getElementById("laPazZonas");
-
-document.querySelectorAll("#bajaCaliforniaSur .option-card").forEach(card => {
-  if (card.innerText.trim() === "La Paz") {
-    card.onclick = () => {
-      bajaCaliforniaSur.classList.remove("active");
-      laPazZonas.classList.add("active");
+Object.entries(tijuanaRutasConfig).forEach(([rutaNombre, config]) => {
+  const btn = document.getElementById(config.id);
+  if (btn) {
+    btn.onclick = () => {
+      startRoute(config.rutaKey, "baja_california");
     };
   }
 });
 
-document.getElementById("backToBCSFromLaPazZonas").onclick = () => {
-  laPazZonas.classList.remove("active");
-  bajaCaliforniaSur.classList.add("active");
+// La Paz
+const laPazRutasConfig = {
+  "Malecón de La Paz": { id: "goToMalecon", rutaKey: "maleconLaPaz" },
+  "Centro Histórico": { id: "goToCentro", rutaKey: "centroHistorico" }
 };
-  
-// Entrar a La Paz (Ciudad) desde Zonas  
-const laPazCiudadRutas = document.getElementById("laPazCiudadRutas");  
-  
-document.querySelectorAll("#laPazZonas .option-card").forEach(card => {
-  if (card.innerText.trim() === "La Paz (Ciudad)") {
-    card.onclick = () => {
-      laPazZonas.classList.remove("active");
-      laPazCiudadRutas.classList.add("active");
+
+Object.entries(laPazRutasConfig).forEach(([rutaNombre, config]) => {
+  const btn = document.getElementById(config.id);
+  if (btn) {
+    btn.onclick = () => {
+      startRoute(config.rutaKey, "baja_california_sur");
     };
   }
 });
 
-document.getElementById("backToLaPazZonasFromCiudad").onclick = () => {
-  laPazCiudadRutas.classList.remove("active");
-  laPazZonas.classList.add("active");
-};  
-  
 // ================================
-// RUTAS DE VIDEO
+// RUTAS DE VIDEO - VARIABLES
 // ================================
 const maleconLaPazRuta = document.getElementById("maleconLaPazRuta");
 const malecon360  = document.getElementById("malecon360");
@@ -246,7 +519,6 @@ const distanceValue = document.getElementById("distanceValue");
 let hls = null;
 let videoReady = false;
 let videoStarted = false;
-
 let finishMap = null;
 let leafletMap = null;
 let routeLine = null;
@@ -254,13 +526,28 @@ let routeLine = null;
 // ================================
 // INICIAR CUALQUIER RUTA
 // ================================
-function startRoute(routeKey) {
-  currentRoute = ROUTES[routeKey];
+function startRoute(routeKey, estado) {
+  if (!RUTAS[estado]) {
+    console.error(`Estado no encontrado en RUTAS: ${estado}`);
+    return;
+  }
+  
+  if (!RUTAS[estado][routeKey]) {
+    console.error(`Ruta no encontrada: ${routeKey} en estado ${estado}`);
+    return;
+  }
+  
+  currentRoute = RUTAS[estado][routeKey];
+  currentEstado = estado;
 
-  laPazCiudadRutas.classList.remove("active");
+  const currentScreen = document.querySelector('.screen.active');
+  if (currentScreen) {
+    currentScreen.classList.remove("active");
+  }
+  
   maleconLaPazRuta.classList.add("active");
 
-  // reset métricas
+  // Reset métricas
   steps = 0;
   distance = 0;
   elapsedSeconds = 0;
@@ -272,26 +559,12 @@ function startRoute(routeKey) {
   speedValue.textContent = "0";
 
   initHLS(currentRoute.video);
+  
+  setTimeout(() => {
+    startVideoWithPermissions();
+  }, 500);
+  
   initMiniMap();
-}
-
-// Entrar a Ruta: 
-document.getElementById("goToMalecon").onclick = () => {
-  startRoute("maleconLaPaz");
-};
-
-// ================================
-// AGREGAR ESTO EN TU HTML:
-// En la pantalla laPazCiudadRutas, agrega este botón:
-// <div class="option-card primary-card" id="goToCentro">Centro Histórico</div>
-// ================================
-
-// Verificar si existe el botón antes de asignar evento
-const goToCentroBtn = document.getElementById("goToCentro");
-if (goToCentroBtn) {
-  goToCentroBtn.onclick = () => {
-    startRoute("centroHistorico");
-  };
 }
 
 // ================================
@@ -300,6 +573,23 @@ if (goToCentroBtn) {
 function initHLS(videoUrl) {
   if (!Hls.isSupported()) {
     console.error("HLS no soportado");
+    
+    if (malecon360.canPlayType('application/vnd.apple.mpegurl')) {
+      console.log('📱 Usando HLS nativo de iOS');
+      malecon360.src = videoUrl;
+      
+      malecon360.oncanplay = () => {
+        videoReady = true;
+        console.log("✅ Video listo (canplay - iOS nativo)");
+      };
+      
+      malecon360.onended = () => {
+        goToRouteFinish();
+      };
+      
+      return;
+    }
+    
     return;
   }
 
@@ -308,7 +598,11 @@ function initHLS(videoUrl) {
     hls = null;
   }
 
-  hls = new Hls({ lowLatencyMode: true });
+  hls = new Hls({ 
+    lowLatencyMode: true,
+    enableWorker: true
+  });
+  
   hls.loadSource(videoUrl);
   hls.attachMedia(malecon360);
 
@@ -318,9 +612,87 @@ function initHLS(videoUrl) {
   };
 
   malecon360.onended = () => {
-    console.log("🎬 Video terminado → finalizar ruta");
     goToRouteFinish();
   };
+}
+
+// ================================
+// CONTROLES TÁCTILES MANUALES (para iOS sin permisos)
+// ================================
+let isDraggingVideo = false;
+let lastTouchX = 0;
+let currentRotationY = -90;
+
+function setupManualControls() {
+  const videoContainer = document.querySelector('.video-container');
+  if (!videoContainer) return;
+  
+  videoContainer.style.cursor = 'grab';
+  
+  videoContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+  videoContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+  videoContainer.addEventListener('touchend', handleTouchEnd);
+  
+  console.log('👆 Controles táctiles manuales habilitados');
+  
+  // Mostrar instrucciones
+  const instructions = document.createElement('div');
+  instructions.id = 'touchInstructions';
+  instructions.style.cssText = `
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 1000;
+    font-size: 14px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  `;
+  instructions.innerHTML = '👆 Desliza para girar la vista 360°';
+  
+  videoContainer.appendChild(instructions);
+  
+  setTimeout(() => {
+    instructions.style.opacity = '0';
+    setTimeout(() => {
+      if (instructions.parentNode) {
+        instructions.parentNode.removeChild(instructions);
+      }
+    }, 1000);
+  }, 5000);
+}
+
+function handleTouchStart(e) {
+  if (e.touches.length === 1) {
+    isDraggingVideo = true;
+    lastTouchX = e.touches[0].clientX;
+    e.preventDefault();
+  }
+}
+
+function handleTouchMove(e) {
+  if (!isDraggingVideo || e.touches.length !== 1) return;
+  
+  const touchX = e.touches[0].clientX;
+  const deltaX = touchX - lastTouchX;
+  currentRotationY += deltaX * 0.5;
+  
+  const videoSphere = document.getElementById('videoSphere');
+  if (videoSphere) {
+    videoSphere.setAttribute('rotation', `0 ${currentRotationY} 0`);
+  }
+  
+  lastTouchX = touchX;
+  e.preventDefault();
+}
+
+function handleTouchEnd() {
+  isDraggingVideo = false;
 }
 
 // ================================
@@ -356,9 +728,9 @@ speedRange.addEventListener("input", async () => {
 // GAME LOGIC
 // ================================
 let steps = 0;
-let distance = 0; // km
+let distance = 0;
 let lastTime = null;
-const STEP_KM = 0.00075; // Aproximadamente 1333 pasos por km
+const STEP_KM = 0.00075;
 let elapsedSeconds = 0;
 
 function gameLoop(timestamp) {
@@ -383,7 +755,6 @@ function gameLoop(timestamp) {
   requestAnimationFrame(gameLoop);
 }
 
-// Iniciar el loop del juego
 requestAnimationFrame(gameLoop);
 
 // ================================
@@ -398,17 +769,13 @@ function updateMiniMap(distanceKm) {
   const lat = start[0] + (end[0] - start[0]) * progress;
   const lng = start[1] + (end[1] - start[1]) * progress;
 
-  // Actualizar la línea en el mapa
   routeLine.setLatLngs([start, [lat, lng]]);
-  
-  // Mover el mapa al punto actual
   leafletMap.setView([lat, lng], 16);
 }
 
 function initMiniMap() {
   if (!currentRoute) return;
 
-  // Limpiar mapa anterior si existe
   if (leafletMap) {
     leafletMap.remove();
     leafletMap = null;
@@ -484,7 +851,6 @@ function formatTime(seconds) {
   return `${min}:${sec.toString().padStart(2, "0")}`;
 }
 
-// Iconos de mapa
 const startIcon = L.divIcon({
   className: "start-pin",
   html: "🟢",
@@ -502,28 +868,26 @@ const endIcon = L.divIcon({
 function goToRouteFinish() {
   if (!currentRoute) return;
 
-  // detener video
   malecon360.pause();
-
-  // ocultar ruta
   maleconLaPazRuta.classList.remove("active");
 
-  // llenar datos finales
   document.getElementById("finishSteps").innerText = Math.floor(steps);
   document.getElementById("finishDistance").innerText = distance.toFixed(2) + " km";
   document.getElementById("finishTime").innerText = formatTime(elapsedSeconds);
   
-  // Actualizar nombre de la ruta en el finish screen
   const routeNameElement = document.querySelector("#routeFinish .route-summary .summary-row:last-child strong");
   if (routeNameElement) {
     routeNameElement.textContent = currentRoute.name;
   }
+  
+  if (currentRoute.achievement) {
+    document.getElementById("achievementTitle").textContent = currentRoute.achievement.title;
+    document.getElementById("achievementDesc").textContent = currentRoute.achievement.description;
+  }
 
-  // mostrar pantalla final
   const finishScreen = document.getElementById("routeFinish");
   finishScreen.classList.add("active");
 
-  // Esperar a que el DOM sea visible
   setTimeout(() => {
     renderFinishMap(distance);
   }, 300);
@@ -537,7 +901,6 @@ function renderFinishMap(distanceKm) {
   const mapContainer = document.getElementById("leafletMap");
   if (!mapContainer || !currentRoute) return;
 
-  // Asegurar que el div tenga tamaño
   mapContainer.style.height = "220px";
   mapContainer.style.width = "100%";
 
@@ -546,20 +909,17 @@ function renderFinishMap(distanceKm) {
 
   const lat = start[0] + (end[0] - start[0]) * progress;
   const lng = start[1] + (end[1] - start[1]) * progress;
-
   const endPoint = [lat, lng];
 
-  // Destruir mapa previo
   if (window.finishMap) {
     window.finishMap.remove();
     window.finishMap = null;
   }
 
-  // Crear mapa
   window.finishMap = L.map("leafletMap", {
     zoomControl: false,
     attributionControl: false
-  });
+  }).setView(start, 15);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 18
@@ -571,12 +931,10 @@ function renderFinishMap(distanceKm) {
     lineCap: "round"
   }).addTo(window.finishMap);
   
-  // 🟢 Pin inicio
   L.marker(start, { icon: startIcon })
     .addTo(window.finishMap)
     .bindPopup("Inicio");
 
-  // 🔴 Pin final
   L.marker(endPoint, { icon: endIcon })
     .addTo(window.finishMap)
     .bindPopup("Fin del recorrido");
@@ -585,79 +943,10 @@ function renderFinishMap(distanceKm) {
     padding: [30, 30]
   });
 
-  // Ajustar tamaño
   setTimeout(() => {
     window.finishMap.invalidateSize();
   }, 100);
 }
-
-// ===== Todos Santos =====
-const todosSantosRutas = document.getElementById("todosSantosRutas");
-
-document.querySelectorAll("#laPazZonas .option-card").forEach(card => {
-  if (card.innerText.trim() === "Todos Santos") {
-    card.onclick = () => {
-      laPazZonas.classList.remove("active");
-      todosSantosRutas.classList.add("active");
-    };
-  }
-});
-
-document.getElementById("backToLaPazZonasFromTodosSantos").onclick = () => {
-  todosSantosRutas.classList.remove("active");
-  laPazZonas.classList.add("active");
-};
-
-// ===== LOS CABOS =====
-const losCabos = document.getElementById("losCabos");
-
-document.querySelectorAll("#bajaCaliforniaSur .option-card").forEach(card => {
-  if (card.innerText.trim() === "Los Cabos") {
-    card.onclick = () => {
-      bajaCaliforniaSur.classList.remove("active");
-      losCabos.classList.add("active");
-    };
-  }
-});
-
-document.getElementById("backToBCSFromLosCabos").onclick = () => {
-  losCabos.classList.remove("active");
-  bajaCaliforniaSur.classList.add("active");
-};
-  
-// ===== CABO SAN LUCAS RUTAS =====
-const caboSanLucasRutas = document.getElementById("caboSanLucasRutas");
-
-document.querySelectorAll("#losCabos .option-card").forEach(card => {
-  if (card.innerText.trim() === "Cabo San Lucas") {
-    card.onclick = () => {
-      losCabos.classList.remove("active");
-      caboSanLucasRutas.classList.add("active");
-    };
-  }
-});
-
-document.getElementById("backToLosCabosFromCSL").onclick = () => {
-  caboSanLucasRutas.classList.remove("active");
-  losCabos.classList.add("active");
-};
-  
-// ===== SAN JOSÉ DEL CABO RUTAS =====
-const sanJoseDelCaboRutas = document.getElementById("sanJoseDelCaboRutas");
-
-document.querySelectorAll("#losCabos .option-card").forEach(card => {
-  if (card.innerText.trim() === "San José del Cabo") {
-    card.onclick = () => {
-      losCabos.classList.remove("active");
-      sanJoseDelCaboRutas.classList.add("active");
-    };
-  }
-});
-
-document.getElementById("backToLosCabosFromSJC").onclick = () => {
-  sanJoseDelCaboRutas.classList.remove("active");
-  losCabos.classList.add("active");
-};
 
 // ================================
 // NAVEGACIÓN RUTA FINALIZADA
@@ -665,24 +954,26 @@ document.getElementById("backToLosCabosFromSJC").onclick = () => {
 document.getElementById("backToRoutes").onclick = () => {
   const finishScreen = document.getElementById("routeFinish");
   finishScreen.classList.remove("active");
-  laPazCiudadRutas.classList.add("active");
+  
+  if (lastRoutesScreen && document.getElementById(lastRoutesScreen)) {
+    document.getElementById(lastRoutesScreen).classList.add("active");
+  } else {
+    states.classList.add("active");
+  }
 };
 
 document.getElementById("repeatRoute").onclick = () => {
   const finishScreen = document.getElementById("routeFinish");
   finishScreen.classList.remove("active");
   
-  // Reiniciar variables de la ruta
   steps = 0;
   distance = 0;
   elapsedSeconds = 0;
   videoReady = false;
   videoStarted = false;
   
-  // Ir a la pantalla de la ruta
   maleconLaPazRuta.classList.add("active");
   
-  // Reiniciar el video
   setTimeout(() => {
     if (currentRoute) {
       initHLS(currentRoute.video);
@@ -690,3 +981,12 @@ document.getElementById("repeatRoute").onclick = () => {
     }
   }, 100);
 };
+
+// ================================
+// INICIALIZACIÓN
+// ================================
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🚀 PasoReal cargado');
+  isIOS = detectIOS();
+  console.log(`📱 Plataforma: ${isIOS ? 'iOS' : 'No iOS'}`);
+});
