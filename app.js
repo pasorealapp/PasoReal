@@ -1,3 +1,34 @@
+// AL INICIO DEL ARCHIVO app.js, después de las variables globales:
+
+// ================================
+// BLOQUEO TOTAL DE ZOOM
+// ================================
+document.addEventListener('wheel', function(e) {
+  if (e.ctrlKey) {
+    e.preventDefault();
+    return false;
+  }
+}, { passive: false });
+
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0')) || e.key === 'F11') {
+    e.preventDefault();
+    return false;
+  }
+});
+
+// También prevenir el zoom táctil en desktop
+document.addEventListener('touchstart', function(e) {
+  if (e.touches.length > 1) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+document.addEventListener('gesturestart', function(e) {
+  e.preventDefault();
+});
+
+
 // ================================
 // CONFIGURACIÓN DE RUTAS POR ESTADO (UNIFICADO)
 // ================================
@@ -71,184 +102,109 @@ const RUTAS = {
   }
 };
 
-// Variables globales
-let currentRoute = null;
-let lastRoutesScreen = null;
-let currentEstado = null;
 
-// Variables para manejo de permisos iOS
-let motionPermissionGranted = false;
-let isIOS = false;
 
-// ================================
-// DETECCIÓN Y MANEJO DE iOS
-// ================================
-
-// Función para detectar iOS
-function detectIOS() {
-  const userAgent = window.navigator.userAgent.toLowerCase();
-  const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
-  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-  const isWebKit = 'WebkitAppearance' in document.documentElement.style;
-  
-  return (isIOSDevice || isSafari || isWebKit);
-}
-
-// Función para verificar si necesita permisos
-function needsMotionPermission() {
-  if (!isIOS) return false;
-  return typeof DeviceMotionEvent !== 'undefined' && 
-         typeof DeviceMotionEvent.requestPermission === 'function';
-}
-
-// Función para mostrar/ocultar overlay de permisos
-function showIOSPermissionOverlay(show) {
-  const overlay = document.getElementById('iosPermissionOverlay');
-  if (overlay) {
-    overlay.style.display = show ? 'flex' : 'none';
-  }
-}
-
-// Configurar A-Frame para iOS
-function configureAFrameForIOS() {
-  const scene = document.querySelector('a-scene');
-  if (!scene) return;
-  
-  scene.setAttribute('device-orientation-permission-ui', 'enabled: false');
-  
-  const camera = document.querySelector('a-camera');
-  if (camera) {
-    camera.setAttribute('look-controls', {
-      enabled: true,
-      touchEnabled: true,
-      mouseEnabled: true,
-      pointerLockEnabled: false
-    });
-  }
-}
-
-// Solicitar permisos de movimiento
-async function requestMotionPermission() {
-  try {
-    if (typeof DeviceMotionEvent.requestPermission !== 'function') {
-      return 'unsupported';
-    }
-    
-    const response = await DeviceMotionEvent.requestPermission();
-    
-    if (response === 'granted') {
-      motionPermissionGranted = true;
-      
-      if (typeof DeviceOrientationEvent !== 'undefined' && 
-          typeof DeviceOrientationEvent.requestPermission === 'function') {
-        try {
-          await DeviceOrientationEvent.requestPermission();
-        } catch (orientationErr) {
-          console.warn('⚠️ No se pudo obtener permiso de orientación:', orientationErr);
-        }
-      }
-      
-      configureAFrameForIOS();
-      return 'granted';
-    } else {
-      return 'denied';
-    }
-  } catch (error) {
-    console.error('❌ Error solicitando permiso de movimiento:', error);
-    return 'error';
-  }
-}
-
-// ================================
-// INICIO DE VIDEO CON PERMISOS iOS
-// ================================
-async function startVideoWithPermissions() {
-  console.log('🎬 Iniciando video con manejo de permisos...');
-  
-  isIOS = detectIOS();
-  console.log(`📱 Es iOS: ${isIOS}`);
-  
-  if (isIOS) {
-    configureAFrameForIOS();
-    
-    if (needsMotionPermission()) {
-      console.log('📱 iOS detectado, necesita permisos de movimiento');
-      
-      setTimeout(() => {
-        showIOSPermissionOverlay(true);
-        
-        const enableBtn = document.getElementById('enableMotion');
-        const skipBtn = document.getElementById('skipMotion');
-        
-        if (enableBtn) {
-          enableBtn.onclick = async () => {
-            console.log('📱 Solicitando permiso de movimiento...');
-            const result = await requestMotionPermission();
-            
-            if (result === 'granted') {
-              showIOSPermissionOverlay(false);
-              console.log('✅ Permiso concedido, video 360° activado');
-              
-              if (malecon360.paused) {
-                try {
-                  await malecon360.play();
-                  videoStarted = true;
-                } catch (e) {
-                  console.error('❌ Error iniciando video:', e);
-                }
-              }
-            } else {
-              alert('Para la experiencia 360° completa, necesitas conceder permisos de movimiento.');
-            }
-          };
-        }
-        
-        if (skipBtn) {
-          skipBtn.onclick = () => {
-            console.log('📱 Usuario omitió permisos 360°');
-            showIOSPermissionOverlay(false);
-            setupManualControls();
-          };
-        }
-      }, 1000);
-    }
-  } else {
-    showIOSPermissionOverlay(false);
-    const scene = document.querySelector('a-scene');
-    if (scene) {
-      scene.setAttribute('vr-mode-ui', 'enabled: true');
-    }
-  }
-}
 
 // ================================
 // VARIABLES GLOBALES
 // ================================
-const login    = document.getElementById("login");
-const register = document.getElementById("register");
-const recover  = document.getElementById("recover");
-const home     = document.getElementById("home");
-const states   = document.getElementById("states");
+let currentRoute = null;
+let currentEstado = null;
+let lastRoutesScreen = null;
+
+let login, register, recover, home, states;
+let bgVideo;
+
+let maleconLaPazRuta, malecon360, videoSphere;
+let speedRange, speedValue;
+let startBtn, pauseBtn, endRouteBtn;
+let stepsValue, distanceValue;
+
+let hls = null;
+let videoReady = false;
+let videoStarted = false;
+
+// Métricas
+let steps = 0;
+let distance = 0;
+let elapsedSeconds = 0;
+let lastTime = null;
+const STEP_KM = 0.00075;
+
+// iOS
+let isIOS = false;
 
 // ================================
-// VIDEO DE FONDO LOGIN
+// UTILIDADES
 // ================================
-const bgVideo = document.getElementById("bgVideo");
+function checkOrientation() {
+  const overlay = document.getElementById("rotateOverlay");
+  if (!overlay) return;
 
+  if (window.innerWidth < window.innerHeight) {
+    // Vertical
+    overlay.style.display = "flex";
+  } else {
+    // Horizontal
+    overlay.style.display = "none";
+  }
+}
+
+
+function detectIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function hideTapOverlay() {
+  const tap = document.getElementById("tapToStart");
+  if (tap) tap.style.display = "none";
+}
+
+function formatTime(seconds) {
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60);
+  return `${min}:${sec.toString().padStart(2, "0")}`;
+}
+
+// ================================
+// INICIALIZAR ELEMENTOS
+// ================================
+function initElements() {
+  login = document.getElementById("login");
+  register = document.getElementById("register");
+  recover = document.getElementById("recover");
+  home = document.getElementById("home");
+  states = document.getElementById("states");
+
+  bgVideo = document.getElementById("bgVideo");
+
+  maleconLaPazRuta = document.getElementById("maleconLaPazRuta");
+  malecon360 = document.getElementById("malecon360");
+  videoSphere = document.getElementById("videoSphere");
+
+  speedRange = document.getElementById("speedRange");
+  speedValue = document.getElementById("speedValue");
+
+  startBtn = document.getElementById("startRoute");
+  pauseBtn = document.getElementById("pauseRoute");
+  endRouteBtn = document.getElementById("endRoute");
+
+  stepsValue = document.getElementById("stepsValue");
+  distanceValue = document.getElementById("distanceValue");
+}
+
+// ================================
+// LOGIN VIDEO
+// ================================
 function loadLoginVideo() {
-  if (!bgVideo) return;
-  if (bgVideo.src) return;
-
-  bgVideo.src =
-    "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/f456f64d303feeb7969b16dfa9c83ca4/manifest/video.m3u8";
-
+  if (!bgVideo || bgVideo.src) return;
+  bgVideo.src = "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/f456f64d303feeb7969b16dfa9c83ca4/manifest/video.m3u8";
   bgVideo.style.display = "block";
-  bgVideo.play().catch(() => {});
+  bgVideo.play().catch(()=>{});
 }
 
 function stopLoginVideo() {
   if (!bgVideo) return;
-
   bgVideo.pause();
   bgVideo.removeAttribute("src");
   bgVideo.load();
@@ -256,82 +212,39 @@ function stopLoginVideo() {
 }
 
 // ================================
-// NAVEGACIÓN LOGIN
+// NAVEGACIÓN SIMPLE (LOGIN)
 // ================================
-document.getElementById("goRegisterBtn").onclick = () => {
-  login.classList.remove("active");
-  register.classList.add("active");
-  loadLoginVideo();
-};
+function setupLogin() {
+  document.querySelector("#login .primary").onclick = () => {
+    login.classList.remove("active");
+    home.classList.add("active");
+    stopLoginVideo();
+  };
 
-document.getElementById("goLoginBtn").onclick = () => {
-  register.classList.remove("active");
-  login.classList.add("active");
-  loadLoginVideo();
-};
+  document.querySelector(".logout-btn").onclick = () => {
+    home.classList.remove("active");
+    login.classList.add("active");
+    loadLoginVideo();
+  };
 
-document.getElementById("recoverBtn").onclick = () => {
-  login.classList.remove("active");
-  recover.classList.add("active");
-  loadLoginVideo();
-};
+  document.querySelector(".primary-card").onclick = () => {
+    home.classList.remove("active");
+    states.classList.add("active");
+  };
 
-document.getElementById("cancelRecoverBtn").onclick = () => {
-  recover.classList.remove("active");
-  login.classList.add("active");
-  loadLoginVideo();
-};
-
-// ================================
-// LOGIN CORRECTO → HOME
-// ================================
-document.querySelector("#login .primary").onclick = () => {
-  login.classList.remove("active");
-  home.classList.add("active");
-  stopLoginVideo();
-};
-
-// ================================
-// LOGOUT → LOGIN
-// ================================
-document.querySelector(".logout-btn").onclick = () => {
-  home.classList.remove("active");
-  login.classList.add("active");
-  loadLoginVideo();
-};
-
-// ================================
-// HOME → STATES
-// ================================
-document.querySelector(".primary-card").onclick = () => {
-  home.classList.remove("active");
-  states.classList.add("active");
-};
-
-document.getElementById("backHomeFromStates").onclick = () => {
-  states.classList.remove("active");
-  home.classList.add("active");
-};
-
-// ================================
-// INICIO AUTOMÁTICO
-// ================================
-if (login.classList.contains("active")) {
-  loadLoginVideo();
+  document.getElementById("backHomeFromStates").onclick = () => {
+    states.classList.remove("active");
+    home.classList.add("active");
+  };
 }
 
 // ================================
-// SISTEMA DE NAVEGACIÓN JERÁRQUICO
+// NAVEGACIÓN JERÁRQUICA DE ESTADOS
 // ================================
 
-// Configuración completa de navegación
+// Configuración de navegación
 const navegacionCompleta = {
   estados: {
-    "Aguascalientes": { 
-      id: "aguascalientes", 
-      back: "backToStatesFromAgs"
-    },
-    
     "Baja California": { 
       id: "bajaCalifornia", 
       back: "backToStatesFromBC",
@@ -341,13 +254,7 @@ const navegacionCompleta = {
           id: "tijuanaRutas", 
           back: "backToBCFromTijuana",
           rutas: true
-        },
-        "Mexicali": { id: "mexicaliRutas", back: "backToBCFromMexicali" },
-        "Ensenada": { id: "ensenadaRutas", back: "backToBCFromEnsenada" },
-        "Tecate": { id: "tecateRutas", back: "backToBCFromTecate" },
-        "Playas de Rosarito": { id: "rosaritoRutas", back: "backToBCFromRosarito" },
-        "San Quintín": { id: "sanQuintinRutas", back: "backToBCFromSanQuintin" },
-        "San Felipe": { id: "sanFelipeRutas", back: "backToBCFromSanFelipe" }
+        }
       }
     },
     
@@ -364,63 +271,11 @@ const navegacionCompleta = {
               id: "laPazCiudadRutas", 
               back: "backToLaPazZonasFromCiudad",
               rutas: true
-            },
-            "Todos Santos": { 
-              id: "todosSantosRutas", 
-              back: "backToLaPazZonasFromTodosSantos" 
             }
           }
-        },
-        "Los Cabos": { 
-          id: "losCabos", 
-          back: "backToBCSFromLosCabos",
-          zonas: {
-            "Cabo San Lucas": { 
-              id: "caboSanLucasRutas", 
-              back: "backToLosCabosFromCSL" 
-            },
-            "San José del Cabo": { 
-              id: "sanJoseDelCaboRutas", 
-              back: "backToLosCabosFromSJC" 
-            }
-          }
-        },
-        "Comondú": { id: "comonduRutas", back: "backToBCSFromComondu" },
-        "Loreto": { id: "loretoRutas", back: "backToBCSFromLoreto" },
-        "Mulegé": { id: "mulegeRutas", back: "backToBCSFromMulege" }
+        }
       }
-    },
-    
-    // Configuración para los demás estados...
-    "Campeche": { id: "campeche", back: "backToStatesFromCampeche" },
-    "Chiapas": { id: "chiapas", back: "backToStatesFromChiapas" },
-    "Chihuahua": { id: "chihuahua", back: "backToStatesFromChihuahua" },
-    "Ciudad de México": { id: "cdmx", back: "backToStatesFromCDMX" },
-    "Coahuila": { id: "coahuila", back: "backToStatesFromCoahuila" },
-    "Colima": { id: "colima", back: "backToStatesFromColima" },
-    "Durango": { id: "durango", back: "backToStatesFromDurango" },
-    "Estado de México": { id: "edomex", back: "backToStatesFromEdomex" },
-    "Guanajuato": { id: "guanajuato", back: "backToStatesFromGuanajuato" },
-    "Guerrero": { id: "guerrero", back: "backToStatesFromGuerrero" },
-    "Hidalgo": { id: "hidalgo", back: "backToStatesFromHidalgo" },
-    "Jalisco": { id: "jalisco", back: "backToStatesFromJalisco" },
-    "Michoacán": { id: "michoacan", back: "backToStatesFromMichoacan" },
-    "Morelos": { id: "morelos", back: "backToStatesFromMorelos" },
-    "Nayarit": { id: "nayarit", back: "backToStatesFromNayarit" },
-    "Nuevo León": { id: "nuevoLeon", back: "backToStatesFromNuevoLeon" },
-    "Oaxaca": { id: "oaxaca", back: "backToStatesFromOaxaca" },
-    "Puebla": { id: "puebla", back: "backToStatesFromPuebla" },
-    "Querétaro": { id: "queretaro", back: "backToStatesFromQueretaro" },
-    "Quintana Roo": { id: "quintanaRoo", back: "backToStatesFromQuintanaRoo" },
-    "San Luis Potosí": { id: "sanLuisPotosi", back: "backToStatesFromSLP" },
-    "Sinaloa": { id: "sinaloa", back: "backToStatesFromSinaloa" },
-    "Sonora": { id: "sonora", back: "backToStatesFromSonora" },
-    "Tabasco": { id: "tabasco", back: "backToStatesFromTabasco" },
-    "Tamaulipas": { id: "tamaulipas", back: "backToStatesFromTamaulipas" },
-    "Tlaxcala": { id: "tlaxcala", back: "backToStatesFromTlaxcala" },
-    "Veracruz": { id: "veracruz", back: "backToStatesFromVeracruz" },
-    "Yucatán": { id: "yucatan", back: "backToStatesFromYucatan" },
-    "Zacatecas": { id: "zacatecas", back: "backToStatesFromZacatecas" }
+    }
   }
 };
 
@@ -430,11 +285,15 @@ function configurarNavegacion(config, nivel = "states", padre = null) {
     const { id, back, estadoKey } = info;
     
     // Configurar navegación hacia adelante
-    document.querySelectorAll(`#${nivel} .option-card`).forEach(card => {
+    const cards = document.querySelectorAll(`#${nivel} .option-card`);
+    cards.forEach(card => {
       if (card.innerText.trim() === nombre) {
         card.onclick = () => {
-          document.querySelector(`#${nivel}`).classList.remove("active");
-          document.getElementById(id).classList.add("active");
+          const currentScreen = document.querySelector(`#${nivel}`);
+          const targetScreen = document.getElementById(id);
+          
+          if (currentScreen) currentScreen.classList.remove("active");
+          if (targetScreen) targetScreen.classList.add("active");
           
           if (info.rutas) {
             lastRoutesScreen = id;
@@ -449,8 +308,11 @@ function configurarNavegacion(config, nivel = "states", padre = null) {
       const backBtn = document.getElementById(back);
       if (backBtn) {
         backBtn.onclick = () => {
-          document.getElementById(id).classList.remove("active");
-          document.querySelector(`#${nivel}`).classList.add("active");
+          const targetScreen = document.getElementById(id);
+          const parentScreen = document.querySelector(`#${nivel}`);
+          
+          if (targetScreen) targetScreen.classList.remove("active");
+          if (parentScreen) parentScreen.classList.add("active");
         };
       }
     }
@@ -466,300 +328,161 @@ function configurarNavegacion(config, nivel = "states", padre = null) {
   });
 }
 
-// Inicializar navegación
-configurarNavegacion(navegacionCompleta.estados);
-
 // ================================
 // CONFIGURACIÓN DE BOTONES DE RUTAS
 // ================================
+function setupRouteButtons() {
+  // Tijuana
+  const tijuanaRutasConfig = {
+    "Av. Revolución": { id: "goToTijuanaRevolucion", rutaKey: "tijuanaRevolucion" },
+    "Playas de Tijuana": { id: "goToTijuanaPlayas", rutaKey: "tijuanaPlayas" },
+    "Centro de Tijuana": { id: "goToTijuanaCentro", rutaKey: "tijuanaCentro" }
+  };
 
-// Tijuana
-const tijuanaRutasConfig = {
-  "Av. Revolución": { id: "goToTijuanaRevolucion", rutaKey: "tijuanaRevolucion" },
-  "Playas de Tijuana": { id: "goToTijuanaPlayas", rutaKey: "tijuanaPlayas" },
-  "Centro de Tijuana": { id: "goToTijuanaCentro", rutaKey: "tijuanaCentro" }
-};
+  Object.entries(tijuanaRutasConfig).forEach(([rutaNombre, config]) => {
+    const btn = document.getElementById(config.id);
+    if (btn) {
+      btn.onclick = () => {
+        startRoute(config.rutaKey, "baja_california");
+      };
+    }
+  });
 
-Object.entries(tijuanaRutasConfig).forEach(([rutaNombre, config]) => {
-  const btn = document.getElementById(config.id);
-  if (btn) {
-    btn.onclick = () => {
-      startRoute(config.rutaKey, "baja_california");
-    };
-  }
-});
+  // La Paz
+  const laPazRutasConfig = {
+    "Malecón de La Paz": { id: "goToMalecon", rutaKey: "maleconLaPaz" },
+    "Centro Histórico": { id: "goToCentro", rutaKey: "centroHistorico" }
+  };
 
-// La Paz
-const laPazRutasConfig = {
-  "Malecón de La Paz": { id: "goToMalecon", rutaKey: "maleconLaPaz" },
-  "Centro Histórico": { id: "goToCentro", rutaKey: "centroHistorico" }
-};
-
-Object.entries(laPazRutasConfig).forEach(([rutaNombre, config]) => {
-  const btn = document.getElementById(config.id);
-  if (btn) {
-    btn.onclick = () => {
-      startRoute(config.rutaKey, "baja_california_sur");
-    };
-  }
-});
-
-// ================================
-// RUTAS DE VIDEO - VARIABLES
-// ================================
-const maleconLaPazRuta = document.getElementById("maleconLaPazRuta");
-const malecon360  = document.getElementById("malecon360");
-const videoSphere = document.getElementById("videoSphere");
-const speedRange  = document.getElementById("speedRange");
-const speedValue  = document.getElementById("speedValue");
-const endRouteBtn = document.getElementById("endRoute");
-const stepsValue    = document.getElementById("stepsValue");
-const distanceValue = document.getElementById("distanceValue");
-
-let hls = null;
-let videoReady = false;
-let videoStarted = false;
-let finishMap = null;
-let leafletMap = null;
-let routeLine = null;
+  Object.entries(laPazRutasConfig).forEach(([rutaNombre, config]) => {
+    const btn = document.getElementById(config.id);
+    if (btn) {
+      btn.onclick = () => {
+        startRoute(config.rutaKey, "baja_california_sur");
+      };
+    }
+  });
+}
 
 // ================================
-// INICIAR CUALQUIER RUTA
+// INICIAR RUTA (ÚNICO PUNTO)
 // ================================
 function startRoute(routeKey, estado) {
-  if (!RUTAS[estado]) {
-    console.error(`Estado no encontrado en RUTAS: ${estado}`);
-    return;
-  }
-  
-  if (!RUTAS[estado][routeKey]) {
-    console.error(`Ruta no encontrada: ${routeKey} en estado ${estado}`);
-    return;
-  }
-  
+  if (!RUTAS[estado] || !RUTAS[estado][routeKey]) return;
+
   currentRoute = RUTAS[estado][routeKey];
   currentEstado = estado;
 
-  const currentScreen = document.querySelector('.screen.active');
-  if (currentScreen) {
-    currentScreen.classList.remove("active");
-  }
-  
+  lastRoutesScreen = document.querySelector(".screen.active")?.id || null;
+
+  document.querySelectorAll(".screen.active").forEach(s => s.classList.remove("active"));
   maleconLaPazRuta.classList.add("active");
 
-  // Reset métricas
   steps = 0;
   distance = 0;
   elapsedSeconds = 0;
   videoReady = false;
   videoStarted = false;
 
-  videoSphere.removeAttribute("src");
   speedRange.value = 0;
   speedValue.textContent = "0";
+  
+  // ✅ SOLUCIÓN 1: Ocultar overlay de "toca para iniciar" al entrar a la ruta
+  hideTapOverlay();
 
   initHLS(currentRoute.video);
-  
-  setTimeout(() => {
-    startVideoWithPermissions();
-  }, 500);
-  
   initMiniMap();
+
+  // ✅ SOLUCIÓN 1 (seguro): Ocultar después de un pequeño delay para asegurar
+  setTimeout(() => {
+    hideTapOverlay();
+  }, 100);
 }
 
 // ================================
-// HLS INIT
+// HLS / VIDEO
 // ================================
-function initHLS(videoUrl) {
-  if (!Hls.isSupported()) {
-    console.error("HLS no soportado");
-    
-    if (malecon360.canPlayType('application/vnd.apple.mpegurl')) {
-      console.log('📱 Usando HLS nativo de iOS');
-      malecon360.src = videoUrl;
-      
-      malecon360.oncanplay = () => {
-        videoReady = true;
-        console.log("✅ Video listo (canplay - iOS nativo)");
-      };
-      
-      malecon360.onended = () => {
-        goToRouteFinish();
-      };
-      
-      return;
-    }
-    
-    return;
-  }
-
+function initHLS(url) {
   if (hls) {
     hls.destroy();
     hls = null;
   }
 
-  hls = new Hls({ 
-    lowLatencyMode: true,
-    enableWorker: true
-  });
-  
-  hls.loadSource(videoUrl);
-  hls.attachMedia(malecon360);
+  if (Hls.isSupported() && !isIOS) {
+    hls = new Hls();
+    hls.loadSource(url);
+    hls.attachMedia(malecon360);
+  } else {
+    malecon360.src = url;
+  }
 
-  malecon360.oncanplay = () => {
-    videoReady = true;
-    console.log("✅ Video listo (canplay)");
-  };
-
-  malecon360.onended = () => {
-    goToRouteFinish();
-  };
-}
-
-// ================================
-// CONTROLES TÁCTILES MANUALES (para iOS sin permisos)
-// ================================
-let isDraggingVideo = false;
-let lastTouchX = 0;
-let currentRotationY = -90;
-
-function setupManualControls() {
-  const videoContainer = document.querySelector('.video-container');
-  if (!videoContainer) return;
-  
-  videoContainer.style.cursor = 'grab';
-  
-  videoContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
-  videoContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-  videoContainer.addEventListener('touchend', handleTouchEnd);
-  
-  console.log('👆 Controles táctiles manuales habilitados');
-  
-  // Mostrar instrucciones
-  const instructions = document.createElement('div');
-  instructions.id = 'touchInstructions';
-  instructions.style.cssText = `
-    position: absolute;
-    bottom: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 10px;
-    text-align: center;
-    z-index: 1000;
-    font-size: 14px;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  `;
-  instructions.innerHTML = '👆 Desliza para girar la vista 360°';
-  
-  videoContainer.appendChild(instructions);
+  // ✅ SOLUCIÓN 2: Configuración esencial para iOS
+  malecon360.muted = true;
+  malecon360.playsInline = true; // ✅ Impide que Safari iOS tome control completo
+  malecon360.load();
   
   setTimeout(() => {
-    instructions.style.opacity = '0';
-    setTimeout(() => {
-      if (instructions.parentNode) {
-        instructions.parentNode.removeChild(instructions);
-      }
-    }, 1000);
-  }, 5000);
-}
+  if (!videoReady) videoReady = true;
+}, 800);
 
-function handleTouchStart(e) {
-  if (e.touches.length === 1) {
-    isDraggingVideo = true;
-    lastTouchX = e.touches[0].clientX;
-    e.preventDefault();
-  }
-}
+  malecon360.onloadeddata = () => {
+    videoReady = true;
+  };
 
-function handleTouchMove(e) {
-  if (!isDraggingVideo || e.touches.length !== 1) return;
-  
-  const touchX = e.touches[0].clientX;
-  const deltaX = touchX - lastTouchX;
-  currentRotationY += deltaX * 0.5;
-  
-  const videoSphere = document.getElementById('videoSphere');
-  if (videoSphere) {
-    videoSphere.setAttribute('rotation', `0 ${currentRotationY} 0`);
-  }
-  
-  lastTouchX = touchX;
-  e.preventDefault();
-}
-
-function handleTouchEnd() {
-  isDraggingVideo = false;
+  malecon360.onended = goToRouteFinish;
 }
 
 // ================================
-// CAMINADORA / VELOCIDAD
+// BOTÓN INICIAR (CLAVE iOS)
 // ================================
-speedRange.addEventListener("input", async () => {
+
+
+// ================================
+// CONTROLES
+// ================================
+function setupControls() {
+  speedRange.addEventListener("input", async () => {
   const speed = Number(speedRange.value);
   speedValue.textContent = speed;
 
-  if (!videoReady) return;
-
+  // ⛔ si está en 0, pausamos
   if (speed === 0) {
-    malecon360.pause();
+    if (!malecon360.paused) malecon360.pause();
     return;
   }
 
-  if (!videoStarted) {
+  // ✅ PRIMER GESTO = INICIAR VIDEO
+  if (!videoStarted && videoReady) {
     try {
+      malecon360.muted = true;
       await malecon360.play();
+
       videoSphere.setAttribute("src", "#malecon360");
       videoSphere.setAttribute("rotation", "0 -90 0");
+
+      malecon360.muted = false;
       videoStarted = true;
+
+      hideTapOverlay(); // ⬅️ MUY IMPORTANTE
     } catch (e) {
-      console.error("No se pudo iniciar video", e);
+      console.warn("Esperando gesto válido", e);
       return;
     }
   }
 
+  // 🎚️ controlar velocidad
   malecon360.playbackRate = speed / 3;
 });
 
-// ================================
-// GAME LOGIC
-// ================================
-let steps = 0;
-let distance = 0;
-let lastTime = null;
-const STEP_KM = 0.00075;
-let elapsedSeconds = 0;
-
-function gameLoop(timestamp) {
-  if (!lastTime) lastTime = timestamp;
-  const delta = (timestamp - lastTime) / 1000;
-  lastTime = timestamp;
-
-  const speed = parseFloat(speedRange.value);
-
-  if (speed > 0 && videoStarted) {
-    elapsedSeconds += delta;
-
-    const kmThisFrame = (speed / 3600) * delta;
-    distance += kmThisFrame;
-    steps += kmThisFrame / STEP_KM;
-
-    stepsValue.textContent = Math.floor(steps);
-    distanceValue.textContent = distance.toFixed(2);
-    updateMiniMap(distance);
-  }
-
-  requestAnimationFrame(gameLoop);
+  endRouteBtn.onclick = goToRouteFinish;
 }
-
-requestAnimationFrame(gameLoop);
 
 // ================================
 // MINI MAPA
 // ================================
+let leafletMap = null;
+let routeLine = null;
+
 function updateMiniMap(distanceKm) {
   if (!leafletMap || !routeLine || !currentRoute) return;
 
@@ -776,10 +499,14 @@ function updateMiniMap(distanceKm) {
 function initMiniMap() {
   if (!currentRoute) return;
 
+  // Limpiar mapa anterior
   if (leafletMap) {
     leafletMap.remove();
     leafletMap = null;
   }
+
+  const mapContainer = document.getElementById("minileafletMap");
+  if (!mapContainer) return;
 
   const { start } = currentRoute;
 
@@ -787,9 +514,7 @@ function initMiniMap() {
     zoomControl: false,
     attributionControl: false,
     dragging: false,
-    scrollWheelZoom: false,
-    doubleClickZoom: false,
-    boxZoom: false
+    scrollWheelZoom: false
   }).setView(start, 16);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -801,108 +526,73 @@ function initMiniMap() {
     weight: 4,
     lineCap: "round"
   }).addTo(leafletMap);
-
-  setTimeout(() => leafletMap.invalidateSize(), 200);
 }
 
 // ================================
-// ARRASTRAR MINIMAPA
+// GAME LOOP
 // ================================
-let isDragging = false;
-let offsetX = 0;
-let offsetY = 0;
+function gameLoop(ts) {
+  if (!lastTime) lastTime = ts;
+  const delta = (ts - lastTime) / 1000;
+  lastTime = ts;
 
-const miniMap = document.querySelector(".mini-map");
+  if (videoStarted && !malecon360.paused) {
+    elapsedSeconds += delta;
+    const km = (Number(speedRange.value) / 3600) * delta;
+    distance += km;
+    steps += km / STEP_KM;
 
-if (miniMap) {
-  miniMap.addEventListener("touchstart", e => {
-    isDragging = true;
-    const touch = e.touches[0];
-    offsetX = touch.clientX - miniMap.offsetLeft;
-    offsetY = touch.clientY - miniMap.offsetTop;
-  });
+    stepsValue.textContent = Math.floor(steps);
+    distanceValue.textContent = distance.toFixed(2);
+    updateMiniMap(distance);
+  }
 
-  miniMap.addEventListener("touchmove", e => {
-    if (!isDragging) return;
-    const touch = e.touches[0];
-    miniMap.style.left = touch.clientX - offsetX + "px";
-    miniMap.style.top = touch.clientY - offsetY + "px";
-    miniMap.style.right = "auto";
-  });
-
-  miniMap.addEventListener("touchend", () => {
-    isDragging = false;
-  });
-}
-
-const closeBtn = document.querySelector(".map-close");
-if (closeBtn) {
-  closeBtn.onclick = () => {
-    miniMap.style.display = "none";
-  };
+  requestAnimationFrame(gameLoop);
 }
 
 // ================================
 // FINALIZAR RUTA
 // ================================
-function formatTime(seconds) {
-  const min = Math.floor(seconds / 60);
-  const sec = Math.floor(seconds % 60);
-  return `${min}:${sec.toString().padStart(2, "0")}`;
-}
-
-const startIcon = L.divIcon({
-  className: "start-pin",
-  html: "🟢",
-  iconSize: [24, 24],
-  iconAnchor: [12, 12]
-});
-
-const endIcon = L.divIcon({
-  className: "end-pin",
-  html: "🔴",
-  iconSize: [24, 24],
-  iconAnchor: [12, 12]
-});
-
 function goToRouteFinish() {
-  if (!currentRoute) return;
-
   malecon360.pause();
   maleconLaPazRuta.classList.remove("active");
 
   document.getElementById("finishSteps").innerText = Math.floor(steps);
   document.getElementById("finishDistance").innerText = distance.toFixed(2) + " km";
   document.getElementById("finishTime").innerText = formatTime(elapsedSeconds);
-  
-  const routeNameElement = document.querySelector("#routeFinish .route-summary .summary-row:last-child strong");
-  if (routeNameElement) {
-    routeNameElement.textContent = currentRoute.name;
-  }
-  
-  if (currentRoute.achievement) {
-    document.getElementById("achievementTitle").textContent = currentRoute.achievement.title;
-    document.getElementById("achievementDesc").textContent = currentRoute.achievement.description;
+
+  // Actualizar nombre de la ruta
+  if (currentRoute) {
+    const routeNameElement = document.querySelector("#routeFinish .route-summary .summary-row:last-child strong");
+    if (routeNameElement) {
+      routeNameElement.textContent = currentRoute.name;
+    }
+    
+    // Actualizar logro si existe
+    if (currentRoute.achievement) {
+      const achievementTitle = document.getElementById("achievementTitle");
+      const achievementDesc = document.getElementById("achievementDesc");
+      if (achievementTitle) achievementTitle.textContent = currentRoute.achievement.title;
+      if (achievementDesc) achievementDesc.textContent = currentRoute.achievement.description;
+    }
   }
 
-  const finishScreen = document.getElementById("routeFinish");
-  finishScreen.classList.add("active");
-
+  document.getElementById("routeFinish").classList.add("active");
+  
+  // Renderizar mapa final
   setTimeout(() => {
     renderFinishMap(distance);
   }, 300);
 }
 
-endRouteBtn.addEventListener("click", () => {
-  goToRouteFinish();
-});
+// ================================
+// MAPA FINAL
+// ================================
+let finishMap = null;
 
 function renderFinishMap(distanceKm) {
   const mapContainer = document.getElementById("leafletMap");
   if (!mapContainer || !currentRoute) return;
-
-  mapContainer.style.height = "220px";
-  mapContainer.style.width = "100%";
 
   const { start, end, maxKm } = currentRoute;
   const progress = Math.min(distanceKm / maxKm, 1);
@@ -911,82 +601,131 @@ function renderFinishMap(distanceKm) {
   const lng = start[1] + (end[1] - start[1]) * progress;
   const endPoint = [lat, lng];
 
-  if (window.finishMap) {
-    window.finishMap.remove();
-    window.finishMap = null;
+  // Limpiar mapa anterior
+  if (finishMap) {
+    finishMap.remove();
+    finishMap = null;
   }
 
-  window.finishMap = L.map("leafletMap", {
+  finishMap = L.map("leafletMap", {
     zoomControl: false,
     attributionControl: false
   }).setView(start, 15);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 18
-  }).addTo(window.finishMap);
+  }).addTo(finishMap);
+
+  // Iconos para marcadores
+  const startIcon = L.divIcon({
+    className: "start-pin",
+    html: "🟢",
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  });
+
+  const endIcon = L.divIcon({
+    className: "end-pin",
+    html: "🔴",
+    iconSize: [24, 24],
+    iconAnchor: [12, 12]
+  });
 
   const line = L.polyline([start, endPoint], {
     color: "#0ea5e9",
     weight: 6,
     lineCap: "round"
-  }).addTo(window.finishMap);
+  }).addTo(finishMap);
   
   L.marker(start, { icon: startIcon })
-    .addTo(window.finishMap)
+    .addTo(finishMap)
     .bindPopup("Inicio");
 
   L.marker(endPoint, { icon: endIcon })
-    .addTo(window.finishMap)
+    .addTo(finishMap)
     .bindPopup("Fin del recorrido");
 
-  window.finishMap.fitBounds(line.getBounds(), {
+  finishMap.fitBounds(line.getBounds(), {
     padding: [30, 30]
   });
-
-  setTimeout(() => {
-    window.finishMap.invalidateSize();
-  }, 100);
 }
 
 // ================================
 // NAVEGACIÓN RUTA FINALIZADA
 // ================================
-document.getElementById("backToRoutes").onclick = () => {
-  const finishScreen = document.getElementById("routeFinish");
-  finishScreen.classList.remove("active");
-  
-  if (lastRoutesScreen && document.getElementById(lastRoutesScreen)) {
-    document.getElementById(lastRoutesScreen).classList.add("active");
-  } else {
-    states.classList.add("active");
+function setupFinishNavigation() {
+  const backToRoutes = document.getElementById("backToRoutes");
+  const repeatRoute = document.getElementById("repeatRoute");
+
+  if (backToRoutes) {
+    backToRoutes.onclick = () => {
+      const finishScreen = document.getElementById("routeFinish");
+      if (finishScreen) finishScreen.classList.remove("active");
+      
+      if (lastRoutesScreen && document.getElementById(lastRoutesScreen)) {
+        document.getElementById(lastRoutesScreen).classList.add("active");
+      } else if (states) {
+        states.classList.add("active");
+      }
+    };
   }
-};
 
-document.getElementById("repeatRoute").onclick = () => {
-  const finishScreen = document.getElementById("routeFinish");
-  finishScreen.classList.remove("active");
-  
-  steps = 0;
-  distance = 0;
-  elapsedSeconds = 0;
-  videoReady = false;
-  videoStarted = false;
-  
-  maleconLaPazRuta.classList.add("active");
-  
-  setTimeout(() => {
-    if (currentRoute) {
-      initHLS(currentRoute.video);
-      initMiniMap();
-    }
-  }, 100);
-};
+  if (repeatRoute) {
+    repeatRoute.onclick = () => {
+      const finishScreen = document.getElementById("routeFinish");
+      if (finishScreen) finishScreen.classList.remove("active");
+      
+      steps = 0;
+      distance = 0;
+      elapsedSeconds = 0;
+      videoReady = false;
+      videoStarted = false;
+      
+      if (maleconLaPazRuta) {
+        maleconLaPazRuta.classList.add("active");
+      }
+      
+      setTimeout(() => {
+        if (currentRoute) {
+          initHLS(currentRoute.video);
+          initMiniMap();
+        }
+      }, 100);
+    };
+  }
+}
 
 // ================================
-// INICIALIZACIÓN
+// INIT
 // ================================
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 PasoReal cargado');
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. Detectar iOS
   isIOS = detectIOS();
-  console.log(`📱 Plataforma: ${isIOS ? 'iOS' : 'No iOS'}`);
+  
+  // 2. Inicializar elementos
+  initElements();
+  
+  // 3. Configurar navegación
+  setupLogin();
+  configurarNavegacion(navegacionCompleta.estados);
+  setupRouteButtons();
+  
+  // 4. Configurar controles
+  
+  setupControls();
+  setupFinishNavigation();
+  
+  // 5. Iniciar game loop
+  requestAnimationFrame(gameLoop);
+  
+  // 6. Cargar video de login si está activo
+  if (login && login.classList.contains("active")) {
+    loadLoginVideo();
+  }
+  // 🔄 orientación
+  checkOrientation();
+  window.addEventListener("resize", checkOrientation);
+  window.addEventListener("orientationchange", checkOrientation);
+  
+  
 });
