@@ -2,7 +2,13 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" 
+      content="width=device-width, 
+               initial-scale=1.0, 
+               maximum-scale=1.0, 
+               minimum-scale=1.0, 
+               user-scalable=no,
+               viewport-fit=cover">
   <title>PasoReal - Camina el Mundo en 360°</title>
   <link rel="stylesheet" href="styles.css">
   
@@ -331,6 +337,15 @@
       </div>
     </div>
     
+    <!-- 🔄 AVISO ROTAR CELULAR -->
+  <div id="rotateOverlay" class="rotate-overlay">
+    <div class="rotate-box">
+      🔄<br>
+      Para una mejor experiencia<br>
+      <strong>voltea tu teléfono</strong>
+    </div>
+  </div>
+    
     <div class="game-hud">
       <div class="hud-item">
         <span id="stepsValue">0</span>
@@ -347,19 +362,46 @@
       <button class="map-close">×</button>
     </div>
     
-    <div class="video-container">
-      <a-scene embedded vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-        <a-assets>
-          <video id="malecon360" muted playsinline webkit-playsinline preload="auto" crossorigin="anonymous"></video>
-        </a-assets>
-        <a-camera look-controls="enabled: true" touch-enabled="true" mouse-enabled="true"></a-camera>
-        <a-videosphere id="videoSphere" rotation="0 -90 0"></a-videosphere>
-      </a-scene>
-    </div>
+    <!-- En la pantalla maleconLaPazRuta -->
+<div class="video-container">
+    <!-- SOLO UN a-scene -->
+    <a-scene 
+      embedded 
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+      renderer="antialias: true; precision: medium;"
+      loading-screen="enabled: false"
+      style="position: fixed; inset: 0; width: 100vw; height: 100vh;"
+    >
+      <a-assets>
+        <video
+          id="malecon360"
+          muted
+          playsinline
+          webkit-playsinline
+          preload="auto"
+          crossorigin="anonymous">
+        </video>
+      </a-assets>
+
+      <a-camera
+        look-controls="enabled: true; touchEnabled: true; mouseEnabled: true; reverseMouseDrag: true"
+        wasd-controls="enabled: false"
+        position="0 0 0"
+        rotation="0 0 0">
+      </a-camera>
+
+      <a-videosphere
+        id="videoSphere"
+        src="#malecon360"
+        rotation="0 -90 0"
+        radius="500">
+      </a-videosphere>
+    </a-scene>
+  </div>
     
     <div class="route-controls">
-      <button class="control-btn" id="startRoute">Iniciar</button>
-      <button class="control-btn" id="pauseRoute">Pausar</button>
+      
       <button class="control-btn danger" id="endRoute">Finalizar</button>
     </div>
     
