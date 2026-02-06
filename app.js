@@ -3,7 +3,7 @@
 // ================================
 const APP_CONFIG = {
     name: 'PasoReal Pro',
-    version: '2.0.0',
+    version: '2.0.1',
     features: {
         ai: true,
         fitness: true,
@@ -49,7 +49,6 @@ class AppState {
         this.isLoading = true;
         this.currentScreen = 'login';
         
-        // Sistema de eventos
         this.events = new EventTarget();
     }
     
@@ -134,10 +133,8 @@ class RouteManager {
     
     async loadRoutes() {
         try {
-            // Cargar rutas precargadas
             this.preloadRoutes();
             
-            // Intentar cargar rutas desde API
             if (navigator.onLine) {
                 const response = await fetch(`${APP_CONFIG.api.baseUrl}${APP_CONFIG.api.endpoints.routes}`);
                 if (response.ok) {
@@ -151,7 +148,6 @@ class RouteManager {
     }
     
     preloadRoutes() {
-        // Rutas de ejemplo con metadata enriquecida
         const sampleRoutes = [
             {
                 id: 'malecon-la-paz',
@@ -187,7 +183,72 @@ class RouteManager {
                     }
                 ]
             },
-            // Agregar más rutas aquí...
+            {
+                id: 'centro-historico',
+                name: 'Centro Histórico de La Paz',
+                location: 'La Paz, Baja California Sur',
+                description: 'Recorrido por el corazón histórico de la ciudad',
+                difficulty: 'Fácil',
+                duration: 30,
+                distance: 1.8,
+                elevation: 5,
+                calories: 120,
+                pointsOfInterest: 12,
+                videoUrl: 'https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/8aa913ae75d3814cce9a27bd280d2c4a/manifest/video.m3u8',
+                thumbnail: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop',
+                coordinates: {
+                    start: [24.1605, -110.3128],
+                    end: [24.1630, -110.3095]
+                },
+                tags: ['histórico', 'ciudad', 'fácil', 'cultural'],
+                weather: 'soleado',
+                bestTime: 'tarde',
+                aiFeatures: {
+                    guidedTour: true,
+                    historicalFacts: true
+                },
+                achievements: [
+                    {
+                        id: 'history-explorer',
+                        title: 'Explorador Histórico',
+                        description: 'Completa un recorrido histórico',
+                        xp: 80
+                    }
+                ]
+            },
+            {
+                id: 'tijuana-revolucion',
+                name: 'Avenida Revolución - Tijuana',
+                location: 'Tijuana, Baja California',
+                description: 'El corazón turístico y comercial de Tijuana',
+                difficulty: 'Moderado',
+                duration: 60,
+                distance: 4.5,
+                elevation: 25,
+                calories: 250,
+                pointsOfInterest: 15,
+                videoUrl: 'https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/8aa913ae75d3814cce9a27bd280d2c4a/manifest/video.m3u8',
+                thumbnail: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&auto=format&fit=crop',
+                coordinates: {
+                    start: [32.5331, -117.0382],
+                    end: [32.5348, -117.0361]
+                },
+                tags: ['urbano', 'comercial', 'turístico', 'nocturno'],
+                weather: 'templado',
+                bestTime: 'noche',
+                aiFeatures: {
+                    guidedTour: true,
+                    culturalFacts: true
+                },
+                achievements: [
+                    {
+                        id: 'tijuana-explorer',
+                        title: 'Explorador de Frontera',
+                        description: 'Recorrido completado en Tijuana',
+                        xp: 120
+                    }
+                ]
+            }
         ];
         
         this.processRoutes(sampleRoutes);
@@ -197,20 +258,17 @@ class RouteManager {
         routes.forEach(route => {
             this.routes.set(route.id, route);
             
-            // Categorizar rutas
             if (route.tags.includes('popular')) this.categories.popular.push(route.id);
             if (route.tags.includes('nature')) this.categories.nature.push(route.id);
-            if (route.tags.includes('urban')) this.categories.urban.push(route.id);
-            if (route.tags.includes('historical')) this.categories.historical.push(route.id);
-            if (route.difficulty === 'Difícil') this.categories.challenging.push(route.id);
+            if (route.tags.includes('urban') || route.tags.includes('urbano')) this.categories.urban.push(route.id);
+            if (route.tags.includes('histórico') || route.tags.includes('historical')) this.categories.historical.push(route.id);
+            if (route.difficulty === 'Difícil' || route.difficulty === 'Moderado') this.categories.challenging.push(route.id);
         });
         
-        // Generar recomendaciones
         this.generateRecommendations();
     }
     
     generateRecommendations() {
-        // Lógica simple de recomendación
         this.categories.recommended = [
             ...this.categories.popular.slice(0, 2),
             ...this.categories.nature.slice(0, 1),
@@ -243,7 +301,7 @@ class RouteManager {
 }
 
 // ================================
-// SISTEMA DE FITNESS
+// SISTEMA DE FITNESS (CORREGIDO)
 // ================================
 class FitnessTracker {
     constructor() {
@@ -253,6 +311,7 @@ class FitnessTracker {
         this.activeTime = 0;
         this.startTime = null;
         this.isActive = false;
+        this.lastStepTime = 0;
         this.goals = {
             dailySteps: 10000,
             dailyDistance: 8,
@@ -260,9 +319,11 @@ class FitnessTracker {
             weeklyActiveDays: 5
         };
         
-        // Configurar sensor de pasos si está disponible
-        if ('accelerometer' in window) {
+        if ('Accelerometer' in window) {
             this.setupMotionTracking();
+        } else {
+            console.log('Accelerometer API not available, using manual step tracking');
+            this.simulateSteps = false;
         }
     }
     
@@ -273,48 +334,55 @@ class FitnessTracker {
                 this.detectStep();
             });
             this.accelerometer.start();
+            console.log('Accelerometer started successfully');
         } catch (error) {
             console.warn('Accelerometer not available:', error);
+            this.simulateSteps = false;
         }
     }
     
     detectStep() {
-        // Algoritmo simple de detección de pasos
+        if (!this.accelerometer) return;
+        
         const acceleration = Math.sqrt(
             Math.pow(this.accelerometer.x, 2) +
             Math.pow(this.accelerometer.y, 2) +
             Math.pow(this.accelerometer.z, 2)
         );
         
-        // Lógica de detección de pasos mejorada
         const threshold = 11.5;
-        if (acceleration > threshold && this.isActive) {
+        const now = Date.now();
+        
+        if (acceleration > threshold && this.isActive && now - this.lastStepTime > 400) {
+            this.lastStepTime = now;
             this.addStep();
         }
     }
     
     addStep() {
         this.steps++;
-        this.distance = this.steps * 0.00075; // 0.75m por paso
-        this.calories = this.steps * 0.04; // 0.04 calorías por paso
+        this.distance = this.steps * 0.00075;
+        this.calories = this.steps * 0.04;
         
-        // Actualizar UI
         this.updateDisplay();
         
-        // Disparar evento
-        appState.events.dispatchEvent(new CustomEvent('fitness:step', {
-            detail: { steps: this.steps, distance: this.distance, calories: this.calories }
-        }));
+        if (appState && appState.events) {
+            appState.events.dispatchEvent(new CustomEvent('fitness:step', {
+                detail: { steps: this.steps, distance: this.distance, calories: this.calories }
+            }));
+        }
         
-        // Verificar logros
         this.checkAchievements();
     }
     
     startSession() {
         this.isActive = true;
         this.startTime = Date.now();
+        this.lastStepTime = 0;
         
-        appState.events.dispatchEvent(new CustomEvent('fitness:session-start'));
+        if (appState && appState.events) {
+            appState.events.dispatchEvent(new CustomEvent('fitness:session-start'));
+        }
     }
     
     pauseSession() {
@@ -324,25 +392,26 @@ class FitnessTracker {
             this.startTime = null;
         }
         
-        appState.events.dispatchEvent(new CustomEvent('fitness:session-pause'));
+        if (appState && appState.events) {
+            appState.events.dispatchEvent(new CustomEvent('fitness:session-pause'));
+        }
     }
     
     endSession() {
         this.pauseSession();
-        
-        // Guardar sesión
         this.saveSession();
         
-        appState.events.dispatchEvent(new CustomEvent('fitness:session-end', {
-            detail: {
-                steps: this.steps,
-                distance: this.distance,
-                calories: this.calories,
-                activeTime: this.activeTime
-            }
-        }));
+        if (appState && appState.events) {
+            appState.events.dispatchEvent(new CustomEvent('fitness:session-end', {
+                detail: {
+                    steps: this.steps,
+                    distance: this.distance,
+                    calories: this.calories,
+                    activeTime: this.activeTime
+                }
+            }));
+        }
         
-        // Resetear para próxima sesión
         this.resetSession();
     }
     
@@ -353,6 +422,7 @@ class FitnessTracker {
         this.activeTime = 0;
         this.startTime = null;
         this.isActive = false;
+        this.lastStepTime = 0;
     }
     
     saveSession() {
@@ -364,14 +434,14 @@ class FitnessTracker {
             activeTime: this.activeTime
         };
         
-        // Guardar en estado de la app
-        appState.updateStats({
-            totalSteps: appState.stats.totalSteps + this.steps,
-            totalDistance: appState.stats.totalDistance + this.distance,
-            totalCalories: appState.stats.totalCalories + this.calories
-        });
+        if (appState) {
+            appState.updateStats({
+                totalSteps: appState.stats.totalSteps + this.steps,
+                totalDistance: appState.stats.totalDistance + this.distance,
+                totalCalories: appState.stats.totalCalories + this.calories
+            });
+        }
         
-        // Guardar en localStorage
         try {
             const sessions = JSON.parse(localStorage.getItem('fitness_sessions') || '[]');
             sessions.push(session);
@@ -382,9 +452,10 @@ class FitnessTracker {
     }
     
     checkAchievements() {
+        if (!appState) return;
+        
         const achievements = [];
         
-        // Logro: Primeros 1000 pasos
         if (this.steps >= 1000 && this.steps - 1 < 1000) {
             achievements.push({
                 id: 'first-1000-steps',
@@ -394,7 +465,6 @@ class FitnessTracker {
             });
         }
         
-        // Logro: 5km recorridos
         if (this.distance >= 5 && this.distance - 0.00075 < 5) {
             achievements.push({
                 id: '5k-distance',
@@ -404,7 +474,6 @@ class FitnessTracker {
             });
         }
         
-        // Agregar logros al estado de la app
         achievements.forEach(achievement => {
             appState.addNotification({
                 type: 'achievement',
@@ -422,35 +491,41 @@ class FitnessTracker {
     }
     
     updateDisplay() {
-        // Actualizar elementos del DOM
         const elements = {
-            steps: document.getElementById('stepsToday'),
-            distance: document.getElementById('distanceToday'),
-            calories: document.getElementById('caloriesToday'),
+            stepsToday: document.getElementById('stepsToday'),
+            distanceToday: document.getElementById('distanceToday'),
+            caloriesToday: document.getElementById('caloriesToday'),
             activeTime: document.getElementById('activeTime')
         };
         
-        if (elements.steps) {
-            elements.steps.textContent = this.steps.toLocaleString();
+        if (elements.stepsToday) {
+            elements.stepsToday.textContent = this.steps.toLocaleString();
         }
         
-        if (elements.distance) {
-            elements.distance.textContent = this.distance.toFixed(1);
+        if (elements.distanceToday) {
+            elements.distanceToday.textContent = this.distance.toFixed(1);
         }
         
-        if (elements.calories) {
-            elements.calories.textContent = Math.round(this.calories);
+        if (elements.caloriesToday) {
+            elements.caloriesToday.textContent = Math.round(this.calories);
         }
         
         if (elements.activeTime) {
-            const minutes = Math.floor(this.activeTime / 60000);
+            const totalTime = this.activeTime + (this.startTime ? Date.now() - this.startTime : 0);
+            const minutes = Math.floor(totalTime / 60000);
             elements.activeTime.textContent = minutes;
+        }
+    }
+    
+    simulateStep() {
+        if (this.isActive) {
+            this.addStep();
         }
     }
 }
 
 // ================================
-// SISTEMA DE IA
+// SISTEMA DE IA (CORREGIDO)
 // ================================
 class AISystem {
     constructor() {
@@ -458,37 +533,66 @@ class AISystem {
         this.isInitialized = false;
         this.insights = [];
         this.coachPersonality = 'motivational';
+        this.hasPoseDetection = false;
         this.initialize();
     }
     
     async initialize() {
         try {
-            // Cargar modelo de TensorFlow.js
+            if (typeof tf === 'undefined') {
+                console.warn('TensorFlow.js not loaded, AI features limited');
+                this.isInitialized = true;
+                return;
+            }
+            
+            if (typeof poseDetection === 'undefined') {
+                console.warn('poseDetection not loaded, using basic AI features');
+                this.hasPoseDetection = false;
+                this.isInitialized = true;
+                return;
+            }
+            
+            this.hasPoseDetection = true;
             await this.loadModel();
             this.isInitialized = true;
-            console.log('AI System initialized');
+            console.log('AI System initialized with pose detection');
         } catch (error) {
             console.error('Failed to initialize AI system:', error);
             this.isInitialized = false;
+            this.hasPoseDetection = false;
         }
     }
     
     async loadModel() {
-        // Cargar modelo de detección de poses
-        const detectorConfig = {
-            modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
-            enableTracking: true,
-            trackerType: poseDetection.TrackerType.Box
-        };
+        if (!this.hasPoseDetection) return;
         
-        this.model = await poseDetection.createDetector(
-            poseDetection.SupportedModels.MoveNet,
-            detectorConfig
-        );
+        try {
+            if (!poseDetection || !poseDetection.SupportedModels) {
+                throw new Error('poseDetection not properly loaded');
+            }
+            
+            const detectorConfig = {
+                modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING,
+                enableTracking: true,
+                trackerType: poseDetection.TrackerType.Box
+            };
+            
+            this.model = await poseDetection.createDetector(
+                poseDetection.SupportedModels.MoveNet,
+                detectorConfig
+            );
+            
+            console.log('Pose detection model loaded');
+        } catch (error) {
+            console.error('Error loading pose detection model:', error);
+            this.hasPoseDetection = false;
+        }
     }
     
     async analyzePose(image) {
-        if (!this.isInitialized || !this.model) return null;
+        if (!this.isInitialized || !this.model || !this.hasPoseDetection) {
+            return null;
+        }
         
         try {
             const poses = await this.model.estimatePoses(image);
@@ -500,8 +604,9 @@ class AISystem {
     }
     
     async getWorkoutRecommendations(userData) {
-        // Analizar datos del usuario y recomendar rutina
         const recommendations = [];
+        
+        if (!userData) return recommendations;
         
         if (userData.steps < 5000) {
             recommendations.push({
@@ -523,10 +628,12 @@ class AISystem {
     }
     
     async generatePersonalizedRoute(userPreferences) {
-        // Generar ruta personalizada basada en preferencias
         const baseRoute = await this.findOptimalRoute(userPreferences);
         
-        // Mejorar la ruta con IA
+        if (!baseRoute) {
+            return routeManager.getRoute('malecon-la-paz');
+        }
+        
         const enhancedRoute = {
             ...baseRoute,
             aiEnhancements: {
@@ -542,7 +649,7 @@ class AISystem {
     
     calculateOptimalPacing(fitnessLevel) {
         const paces = {
-            beginner: 4, // km/h
+            beginner: 4,
             intermediate: 5,
             advanced: 6,
             athlete: 7
@@ -556,7 +663,6 @@ class AISystem {
         
         const feedback = [];
         
-        // Analizar postura
         const postureScore = this.analyzePosture(poseData);
         if (postureScore < 0.7) {
             feedback.push({
@@ -566,7 +672,6 @@ class AISystem {
             });
         }
         
-        // Analizar movimiento
         const movementEfficiency = this.analyzeMovement(poseData);
         if (movementEfficiency < 0.6) {
             feedback.push({
@@ -580,18 +685,23 @@ class AISystem {
     }
     
     analyzePosture(poseData) {
-        // Análisis simple de postura
+        if (!poseData || !poseData.keypoints) return 1.0;
+        
         const keypoints = poseData.keypoints;
+        if (keypoints.length < 12) return 1.0;
+        
         const spineAngle = this.calculateAngle(
-            keypoints[5], // hombro izquierdo
-            keypoints[6], // hombro derecho
-            keypoints[11] // cadera izquierda
+            keypoints[5],
+            keypoints[6],
+            keypoints[11]
         );
         
         return Math.min(1, Math.abs(spineAngle - 180) / 30);
     }
     
     calculateAngle(a, b, c) {
+        if (!a || !b || !c) return 180;
+        
         const ab = { x: b.x - a.x, y: b.y - a.y };
         const bc = { x: c.x - b.x, y: c.y - b.y };
         
@@ -599,12 +709,13 @@ class AISystem {
         const magnitudeAB = Math.sqrt(ab.x * ab.x + ab.y * ab.y);
         const magnitudeBC = Math.sqrt(bc.x * bc.x + bc.y * bc.y);
         
+        if (magnitudeAB === 0 || magnitudeBC === 0) return 180;
+        
         const angle = Math.acos(dotProduct / (magnitudeAB * magnitudeBC));
         return angle * (180 / Math.PI);
     }
     
     async chatWithCoach(message, context) {
-        // Sistema de chat con el coach IA
         const responses = {
             greeting: [
                 "¡Hola! Soy tu coach de fitness virtual. ¿En qué puedo ayudarte hoy?",
@@ -620,10 +731,14 @@ class AISystem {
                 "Mantén una postura recta para evitar lesiones.",
                 "Respira profundamente durante el ejercicio.",
                 "Hidrátate regularmente durante tu entrenamiento."
+            ],
+            general: [
+                "Estoy aquí para ayudarte en tu viaje de fitness.",
+                "Cada entrenamiento cuenta, no importa cuán pequeño sea.",
+                "La consistencia es la clave del éxito en el fitness."
             ]
         };
         
-        // Determinar tipo de mensaje
         const messageLower = message.toLowerCase();
         let responseType = 'general';
         
@@ -635,11 +750,9 @@ class AISystem {
             responseType = 'tips';
         }
         
-        // Seleccionar respuesta aleatoria
         const possibleResponses = responses[responseType] || responses.general;
         const response = possibleResponses[Math.floor(Math.random() * possibleResponses.length)];
         
-        // Agregar personalización basada en contexto
         const personalizedResponse = await this.personalizeResponse(response, context);
         
         return {
@@ -650,7 +763,6 @@ class AISystem {
     }
     
     async personalizeResponse(response, context) {
-        // Personalizar respuesta basada en el contexto del usuario
         if (!context || !context.user) return response;
         
         const user = context.user;
@@ -670,20 +782,40 @@ class AISystem {
         
         return personalized;
     }
+    
+    async findOptimalRoute(preferences) {
+        return routeManager.getRoute('malecon-la-paz');
+    }
+    
+    identifyRestPoints(route) {
+        return [];
+    }
+    
+    findPhotoOpportunities(route) {
+        return [];
+    }
+    
+    adjustDifficulty(route, preferences) {
+        return route;
+    }
+    
+    analyzeMovement(poseData) {
+        return 0.8;
+    }
 }
 
 // ================================
-// SISTEMA DE REALIDAD VIRTUAL
+// SISTEMA DE REALIDAD VIRTUAL (CORREGIDO)
 // ================================
 class VRSystem {
     constructor() {
         this.isVRMode = false;
         this.isFullscreen = false;
-        this.videoPlayer = null;
         this.scene = null;
         this.camera = null;
         this.controls = null;
         this.currentRoute = null;
+        this.deviceOrientationEnabled = false;
         
         this.stats = {
             playbackSpeed: 1.0,
@@ -696,25 +828,7 @@ class VRSystem {
     }
     
     setupEventListeners() {
-        // Escuchar eventos de orientación
-        if (typeof DeviceOrientationEvent !== 'undefined') {
-            window.addEventListener('deviceorientation', (event) => {
-                this.stats.orientation = {
-                    alpha: event.alpha,
-                    beta: event.beta,
-                    gamma: event.gamma
-                };
-                
-                if (this.controls) {
-                    this.updateCameraOrientation();
-                }
-            });
-        }
-        
-        // Escuchar cambios de tamaño
         window.addEventListener('resize', () => this.onWindowResize());
-        
-        // Escuchar teclas para controles
         document.addEventListener('keydown', (event) => this.onKeyDown(event));
     }
     
@@ -725,89 +839,143 @@ class VRSystem {
         }
         
         this.currentRoute = route;
-        
-        // Inicializar A-Frame
         await this.initializeAFrame();
-        
-        // Cargar video 360°
         await this.load360Video(route.videoUrl);
-        
         return true;
     }
     
     async initializeAFrame() {
         return new Promise((resolve) => {
-            // Esperar a que A-Frame esté listo
             if (document.querySelector('a-scene')) {
                 this.scene = document.querySelector('a-scene');
                 this.camera = document.querySelector('a-camera');
-                this.controls = this.camera.components['look-controls'];
+                this.controls = this.camera ? this.camera.components['look-controls'] : null;
                 resolve();
             } else {
-                document.addEventListener('DOMContentLoaded', () => {
-                    this.scene = document.querySelector('a-scene');
-                    this.camera = document.querySelector('a-camera');
-                    this.controls = this.camera.components['look-controls'];
+                const checkScene = setInterval(() => {
+                    if (document.querySelector('a-scene')) {
+                        clearInterval(checkScene);
+                        this.scene = document.querySelector('a-scene');
+                        this.camera = document.querySelector('a-camera');
+                        this.controls = this.camera ? this.camera.components['look-controls'] : null;
+                        resolve();
+                    }
+                }, 100);
+                
+                setTimeout(() => {
+                    clearInterval(checkScene);
                     resolve();
-                });
+                }, 5000);
             }
         });
     }
     
     async load360Video(videoUrl) {
-        const video = document.getElementById('vr-video');
-        if (!video) return;
+        const video = document.getElementById('malecon360');
+        if (!video) {
+            console.error('Video element not found');
+            return;
+        }
         
-        // Configurar video
         video.src = videoUrl;
         video.crossOrigin = 'anonymous';
         video.playsInline = true;
-        video.muted = true; // iOS requiere mute automático
+        video.muted = true;
         
-        // Esperar a que el video esté listo
         await new Promise((resolve, reject) => {
-            video.onloadedmetadata = () => {
+            const onReady = () => {
+                video.removeEventListener('loadedmetadata', onReady);
+                video.removeEventListener('error', onError);
                 this.stats.duration = video.duration;
                 resolve();
             };
-            video.onerror = reject;
+            
+            const onError = (err) => {
+                video.removeEventListener('loadedmetadata', onReady);
+                video.removeEventListener('error', onError);
+                reject(err);
+            };
+            
+            video.addEventListener('loadedmetadata', onReady, { once: true });
+            video.addEventListener('error', onError, { once: true });
+            
+            setTimeout(() => {
+                video.removeEventListener('loadedmetadata', onReady);
+                video.removeEventListener('error', onError);
+                if (video.readyState >= 1) {
+                    this.stats.duration = video.duration || 0;
+                    resolve();
+                } else {
+                    reject(new Error('Video loading timeout'));
+                }
+            }, 10000);
         });
         
-        // Conectar con A-Frame
         const videoSphere = document.querySelector('a-videosphere');
         if (videoSphere) {
-            videoSphere.setAttribute('src', `#${video.id}`);
+            videoSphere.setAttribute('src', '#malecon360');
         }
     }
     
-    updateCameraOrientation() {
-        if (!this.camera || !this.controls) return;
+    enableDeviceOrientation() {
+        if (typeof DeviceOrientationEvent !== 'undefined') {
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
+                    .then(permissionState => {
+                        if (permissionState === 'granted') {
+                            this.deviceOrientationEnabled = true;
+                            window.addEventListener('deviceorientation', (event) => {
+                                this.handleDeviceOrientation(event);
+                            });
+                        }
+                    })
+                    .catch(console.error);
+            } else {
+                this.deviceOrientationEnabled = true;
+                window.addEventListener('deviceorientation', (event) => {
+                    this.handleDeviceOrientation(event);
+                });
+            }
+        }
+    }
+    
+    handleDeviceOrientation(event) {
+        if (!this.deviceOrientationEnabled || !this.camera) return;
         
-        const { alpha, beta, gamma } = this.stats.orientation;
+        if (this.controls && this.controls.enabled) {
+            return;
+        }
         
-        // Suavizar movimiento
-        const smoothFactor = 0.1;
-        const currentRotation = this.camera.getAttribute('rotation') || { x: 0, y: 0, z: 0 };
+        const { alpha, beta, gamma } = event;
+        this.stats.orientation = { alpha, beta, gamma };
         
-        const newRotation = {
-            x: currentRotation.x * (1 - smoothFactor) + (beta || 0) * smoothFactor,
-            y: currentRotation.y * (1 - smoothFactor) + (alpha || 0) * smoothFactor,
-            z: currentRotation.z * (1 - smoothFactor) + (gamma || 0) * smoothFactor
+        const rotation = {
+            x: (beta || 0) - 90,
+            y: (alpha || 0),
+            z: -(gamma || 0)
         };
         
-        this.camera.setAttribute('rotation', newRotation);
+        this.camera.setAttribute('rotation', rotation);
+    }
+    
+    disableDeviceOrientation() {
+        this.deviceOrientationEnabled = false;
+        window.removeEventListener('deviceorientation', this.handleDeviceOrientation);
     }
     
     play() {
-        const video = document.getElementById('vr-video');
+        const video = document.getElementById('malecon360');
         if (video) {
-            video.play();
+            video.play().catch(e => {
+                console.warn('Auto-play prevented:', e);
+                this.showPlayButton();
+            });
             video.playbackRate = this.stats.playbackSpeed;
         }
     }
     
     pause() {
-        const video = document.getElementById('vr-video');
+        const video = document.getElementById('malecon360');
         if (video) {
             video.pause();
         }
@@ -815,7 +983,7 @@ class VRSystem {
     
     setPlaybackSpeed(speed) {
         this.stats.playbackSpeed = speed;
-        const video = document.getElementById('vr-video');
+        const video = document.getElementById('malecon360');
         if (video) {
             video.playbackRate = speed;
         }
@@ -832,36 +1000,20 @@ class VRSystem {
     }
     
     enterVR() {
-        // Solicitar permisos de orientación
-        if (typeof DeviceOrientationEvent !== 'undefined' && 
-            typeof DeviceOrientationEvent.requestPermission === 'function') {
-            DeviceOrientationEvent.requestPermission()
-                .then(permissionState => {
-                    if (permissionState === 'granted') {
-                        this.enableVRControls();
-                    }
-                })
-                .catch(console.error);
-        } else {
-            this.enableVRControls();
-        }
-    }
-    
-    enableVRControls() {
         if (this.controls) {
-            this.controls.pointerLockEnabled = true;
+            this.controls.enabled = false;
         }
         
-        // Entrar a pantalla completa
+        this.enableDeviceOrientation();
         this.enterFullscreen();
     }
     
     exitVR() {
         if (this.controls) {
-            this.controls.pointerLockEnabled = false;
+            this.controls.enabled = true;
         }
         
-        // Salir de pantalla completa
+        this.disableDeviceOrientation();
         this.exitFullscreen();
     }
     
@@ -869,12 +1021,14 @@ class VRSystem {
         const element = document.documentElement;
         
         if (element.requestFullscreen) {
-            element.requestFullscreen();
-        } else if (element.mozRequestFullScreen) { // Firefox
+            element.requestFullscreen().catch(e => {
+                console.warn('Fullscreen error:', e);
+            });
+        } else if (element.mozRequestFullScreen) {
             element.mozRequestFullScreen();
-        } else if (element.webkitRequestFullscreen) { // Chrome, Safari y Opera
+        } else if (element.webkitRequestFullscreen) {
             element.webkitRequestFullscreen();
-        } else if (element.msRequestFullscreen) { // IE/Edge
+        } else if (element.msRequestFullscreen) {
             element.msRequestFullscreen();
         }
         
@@ -884,11 +1038,11 @@ class VRSystem {
     exitFullscreen() {
         if (document.exitFullscreen) {
             document.exitFullscreen();
-        } else if (document.mozCancelFullScreen) { // Firefox
+        } else if (document.mozCancelFullScreen) {
             document.mozCancelFullScreen();
-        } else if (document.webkitExitFullscreen) { // Chrome, Safari y Opera
+        } else if (document.webkitExitFullscreen) {
             document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { // IE/Edge
+        } else if (document.msExitFullscreen) {
             document.msExitFullscreen();
         }
         
@@ -902,14 +1056,20 @@ class VRSystem {
     }
     
     onKeyDown(event) {
-        // Controles de teclado para debug
         switch(event.key) {
             case ' ':
                 event.preventDefault();
-                this.play();
+                const video = document.getElementById('malecon360');
+                if (video.paused) {
+                    this.play();
+                } else {
+                    this.pause();
+                }
                 break;
             case 'Escape':
-                this.exitVR();
+                if (this.isVRMode) {
+                    this.toggleVRMode();
+                }
                 break;
             case '+':
             case '=':
@@ -921,19 +1081,48 @@ class VRSystem {
         }
     }
     
+    showPlayButton() {
+        const playButton = document.createElement('button');
+        playButton.className = 'vr-play-button';
+        playButton.innerHTML = '<i class="fas fa-play"></i> Reproducir Video';
+        playButton.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            padding: 1rem 2rem;
+            background: rgba(14, 165, 233, 0.9);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            cursor: pointer;
+        `;
+        
+        playButton.addEventListener('click', () => {
+            this.play();
+            playButton.remove();
+        });
+        
+        const vrContainer = document.querySelector('.vr-container') || document.body;
+        vrContainer.appendChild(playButton);
+    }
+    
     addPointOfInterest(position, title, description) {
-        // Agregar punto de interés en la escena
+        if (!this.scene) return null;
+        
         const entity = document.createElement('a-entity');
         entity.setAttribute('geometry', 'primitive: sphere; radius: 0.5');
         entity.setAttribute('material', 'color: #0ea5e9; transparent: true; opacity: 0.7');
         entity.setAttribute('position', position);
         entity.setAttribute('animation', 'property: scale; to: 1.2 1.2 1.2; dur: 1000; dir: alternate; loop: true');
         
-        // Tooltip
         const text = document.createElement('a-text');
         text.setAttribute('value', title);
         text.setAttribute('position', '0 1.5 0');
         text.setAttribute('align', 'center');
+        text.setAttribute('color', 'white');
         entity.appendChild(text);
         
         this.scene.appendChild(entity);
@@ -942,7 +1131,7 @@ class VRSystem {
 }
 
 // ================================
-// INTERFAZ DE USUARIO
+// INTERFAZ DE USUARIO (CORREGIDA)
 // ================================
 class UIManager {
     constructor() {
@@ -950,6 +1139,7 @@ class UIManager {
         this.previousScreen = null;
         this.modalStack = [];
         this.notificationTimeout = null;
+        this.updateIntervals = [];
         this.initUI();
     }
     
@@ -961,7 +1151,6 @@ class UIManager {
     }
     
     setupScreenTransitions() {
-        // Configurar transiciones entre pantallas
         const screens = document.querySelectorAll('.screen, .screen-section');
         screens.forEach(screen => {
             screen.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
@@ -969,7 +1158,6 @@ class UIManager {
     }
     
     setupEventListeners() {
-        // Navegación
         document.addEventListener('click', (e) => {
             const screenLink = e.target.closest('[data-screen]');
             if (screenLink) {
@@ -979,7 +1167,6 @@ class UIManager {
             }
         });
         
-        // Botones de retroceso
         document.addEventListener('click', (e) => {
             const backBtn = e.target.closest('[data-back]');
             if (backBtn) {
@@ -988,7 +1175,6 @@ class UIManager {
             }
         });
         
-        // Cerrar modales
         document.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal') || 
                 e.target.classList.contains('close-modal') ||
@@ -997,7 +1183,6 @@ class UIManager {
             }
         });
         
-        // Notificaciones
         document.addEventListener('click', (e) => {
             if (e.target.closest('.notification-btn')) {
                 this.toggleNotifications();
@@ -1006,32 +1191,35 @@ class UIManager {
     }
     
     setupAnimations() {
-        // Configurar animaciones de entrada
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-in');
-                }
+        if ('IntersectionObserver' in window) {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            }, observerOptions);
+            
+            document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                observer.observe(el);
             });
-        }, observerOptions);
-        
-        // Observar elementos animables
-        document.querySelectorAll('.animate-on-scroll').forEach(el => {
-            observer.observe(el);
-        });
+        } else {
+            document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                el.classList.add('animate-in');
+            });
+        }
     }
     
     navigateTo(screenId, params = {}) {
-        // Guardar pantalla anterior
+        this.clearUpdateIntervals();
         this.previousScreen = this.currentScreen;
         this.currentScreen = screenId;
         
-        // Ocultar pantalla actual
         const currentActive = document.querySelector('.screen.active, .screen-section.active');
         if (currentActive) {
             currentActive.classList.remove('active');
@@ -1042,7 +1230,6 @@ class UIManager {
             }, 300);
         }
         
-        // Mostrar nueva pantalla
         const targetScreen = document.getElementById(`${screenId}Screen`) || 
                              document.getElementById(screenId);
         
@@ -1054,19 +1241,23 @@ class UIManager {
                 targetScreen.classList.remove('entering');
             }, 300);
             
-            // Ejecutar callbacks específicos de la pantalla
             this.onScreenEnter(screenId, params);
         }
         
-        // Actualizar URL (para PWA)
         if (history.pushState) {
             history.pushState({ screen: screenId }, '', `#${screenId}`);
         }
         
-        // Disparar evento personalizado
         document.dispatchEvent(new CustomEvent('screen:change', {
             detail: { from: this.previousScreen, to: screenId, params }
         }));
+    }
+    
+    clearUpdateIntervals() {
+        this.updateIntervals.forEach(intervalId => {
+            clearInterval(intervalId);
+        });
+        this.updateIntervals = [];
     }
     
     navigateBack() {
@@ -1095,14 +1286,11 @@ class UIManager {
     }
     
     loadDashboard() {
-        // Cargar datos del dashboard
         this.updateUserGreeting();
         this.updateStatsDisplay();
         this.loadRecommendedRoutes();
         this.loadRecentAchievements();
         this.updateWeather();
-        
-        // Iniciar actualizaciones en tiempo real
         this.startRealTimeUpdates();
     }
     
@@ -1119,13 +1307,12 @@ class UIManager {
         else if (hour < 19) timeGreeting = 'Buenas tardes';
         else timeGreeting = 'Buenas noches';
         
-        if (appState.user && appState.user.name) {
+        if (appState && appState.user && appState.user.name) {
             greeting.textContent = `${timeGreeting}, ${appState.user.name.split(' ')[0]}!`;
         } else {
             greeting.textContent = `${timeGreeting}, Explorador!`;
         }
         
-        // Motivaciones aleatorias
         const motivations = [
             'El mundo te espera',
             'Cada paso es un progreso',
@@ -1138,7 +1325,8 @@ class UIManager {
     }
     
     updateStatsDisplay() {
-        // Actualizar estadísticas en el dashboard
+        if (!appState) return;
+        
         const elements = {
             stepsToday: document.getElementById('stepsToday'),
             distanceToday: document.getElementById('distanceToday'),
@@ -1147,11 +1335,43 @@ class UIManager {
             xpPoints: document.getElementById('xpPoints')
         };
         
-        Object.keys(elements).forEach(key => {
-            if (elements[key] && appState.stats[key]) {
-                elements[key].textContent = appState.stats[key].toLocaleString();
-            }
-        });
+        if (elements.stepsToday) {
+            elements.stepsToday.textContent = appState.stats.totalSteps.toLocaleString();
+        }
+        
+        if (elements.distanceToday) {
+            elements.distanceToday.textContent = appState.stats.totalDistance.toFixed(1);
+        }
+        
+        if (elements.caloriesToday) {
+            elements.caloriesToday.textContent = Math.round(appState.stats.totalCalories);
+        }
+        
+        if (elements.currentStreak) {
+            elements.currentStreak.textContent = appState.stats.currentStreak;
+        }
+        
+        if (elements.xpPoints) {
+            elements.xpPoints.textContent = appState.stats.xp;
+        }
+        
+        const sidebarElements = {
+            stepsToday: document.getElementById('stepsToday'),
+            currentStreak: document.getElementById('currentStreak'),
+            xpPoints: document.getElementById('xpPoints')
+        };
+        
+        if (sidebarElements.stepsToday) {
+            sidebarElements.stepsToday.textContent = appState.stats.totalSteps.toLocaleString();
+        }
+        
+        if (sidebarElements.currentStreak) {
+            sidebarElements.currentStreak.textContent = appState.stats.currentStreak;
+        }
+        
+        if (sidebarElements.xpPoints) {
+            sidebarElements.xpPoints.textContent = appState.stats.xp;
+        }
     }
     
     async loadRecommendedRoutes() {
@@ -1199,7 +1419,6 @@ class UIManager {
         const container = document.getElementById('recentAchievements');
         if (!container) return;
         
-        // Logros de ejemplo
         const achievements = [
             {
                 id: 'first-steps',
@@ -1255,7 +1474,6 @@ class UIManager {
         if (!weatherCard) return;
         
         try {
-            // Usar API de OpenWeatherMap o similar
             const response = await fetch('https://api.openweathermap.org/data/2.5/weather?q=Mexico City&units=metric&lang=es&appid=YOUR_API_KEY');
             if (response.ok) {
                 const data = await response.json();
@@ -1273,8 +1491,6 @@ class UIManager {
                 `;
             }
         } catch (error) {
-            console.warn('Could not fetch weather:', error);
-            // Usar datos por defecto
             weatherCard.innerHTML = `
                 <i class="fas fa-sun"></i>
                 <div>
@@ -1311,24 +1527,22 @@ class UIManager {
     }
     
     startRealTimeUpdates() {
-        // Actualizar estadísticas cada 10 segundos
-        setInterval(() => {
+        const statsInterval = setInterval(() => {
             this.updateStatsDisplay();
         }, 10000);
         
-        // Actualizar saludo cada hora
-        setInterval(() => {
+        const greetingInterval = setInterval(() => {
             this.updateUserGreeting();
         }, 3600000);
         
-        // Actualizar clima cada 30 minutos
-        setInterval(() => {
+        const weatherInterval = setInterval(() => {
             this.updateWeather();
         }, 1800000);
+        
+        this.updateIntervals.push(statsInterval, greetingInterval, weatherInterval);
     }
     
     showNotification(title, message, type = 'info', duration = 5000) {
-        // Crear elemento de notificación
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.innerHTML = `
@@ -1339,23 +1553,19 @@ class UIManager {
             <div class="notification-body">${message}</div>
         `;
         
-        // Agregar al DOM
         const container = document.getElementById('notificationContainer') || 
                          this.createNotificationContainer();
         container.appendChild(notification);
         
-        // Animación de entrada
         setTimeout(() => {
             notification.classList.add('show');
         }, 10);
         
-        // Configurar cierre
         const closeBtn = notification.querySelector('.notification-close');
         closeBtn.addEventListener('click', () => {
             this.hideNotification(notification);
         });
         
-        // Cerrar automáticamente
         if (duration > 0) {
             setTimeout(() => {
                 this.hideNotification(notification);
@@ -1397,8 +1607,6 @@ class UIManager {
         
         modal.classList.add('active');
         this.modalStack.push(modalId);
-        
-        // Prevenir scroll del body
         document.body.style.overflow = 'hidden';
     }
     
@@ -1411,7 +1619,6 @@ class UIManager {
             modal.classList.remove('active');
         }
         
-        // Restaurar scroll del body
         if (this.modalStack.length === 0) {
             document.body.style.overflow = '';
         }
@@ -1441,15 +1648,8 @@ class UIManager {
     }
     
     loadUserPreferences() {
-        // Cargar tema
         const theme = localStorage.getItem('theme') || 'dark';
         document.documentElement.setAttribute('data-theme', theme);
-        
-        // Cargar preferencias de notificaciones
-        const notificationsEnabled = localStorage.getItem('notifications') !== 'false';
-        if (!notificationsEnabled) {
-            // Deshabilitar notificaciones push
-        }
     }
 }
 
@@ -1465,10 +1665,10 @@ let uiManager;
 
 async function initializeApp() {
     try {
-        // Mostrar pantalla de carga
-        uiManager?.showLoading('Inicializando sistema...');
+        if (typeof uiManager !== 'undefined') {
+            uiManager.showLoading('Inicializando sistema...');
+        }
         
-        // Inicializar componentes
         appState = new AppState();
         appState.loadFromStorage();
         
@@ -1478,68 +1678,91 @@ async function initializeApp() {
         vrSystem = new VRSystem();
         uiManager = new UIManager();
         
-        // Configurar eventos globales
         setupGlobalEvents();
         
-        // Verificar autenticación
         if (appState.user) {
             await handleAutoLogin();
         } else {
             showLoginScreen();
         }
         
-        // Inicializar Service Worker
         initializeServiceWorker();
-        
-        // Configurar analíticas
         setupAnalytics();
-        
-        // Configurar actualizaciones en segundo plano
         setupBackgroundUpdates();
         
         console.log('PasoReal Pro initialized successfully');
         
+        setTimeout(() => {
+            uiManager.hideLoading();
+        }, 2000);
+        
     } catch (error) {
         console.error('Failed to initialize app:', error);
         showErrorScreen(error);
-    } finally {
-        uiManager?.hideLoading();
     }
 }
 
 function setupGlobalEvents() {
-    // Estado de red
     window.addEventListener('online', () => {
         appState.isOnline = true;
-        uiManager.showNotification('Conectado', 'Estás en línea', 'success');
+        if (uiManager) {
+            uiManager.showNotification('Conectado', 'Estás en línea', 'success');
+        }
     });
     
     window.addEventListener('offline', () => {
         appState.isOnline = false;
-        uiManager.showNotification('Sin conexión', 'Modo offline activado', 'warning');
+        if (uiManager) {
+            uiManager.showNotification('Sin conexión', 'Modo offline activado', 'warning');
+        }
     });
     
-    // Gestión de memoria
     window.addEventListener('load', () => {
-        // Limpiar caché viejo
         clearOldCache();
     });
     
     window.addEventListener('beforeunload', () => {
-        // Guardar estado antes de salir
-        appState.saveToStorage();
+        if (appState) {
+            appState.saveToStorage();
+        }
+        
+        if (uiManager) {
+            uiManager.clearUpdateIntervals();
+        }
+    });
+    
+    document.addEventListener('wheel', function(e) {
+        if (e.ctrlKey) {
+            e.preventDefault();
+            return false;
+        }
+    }, { passive: false });
+    
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey && (e.key === '+' || e.key === '-' || e.key === '0')) || e.key === 'F11') {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    document.addEventListener('touchstart', function(e) {
+        if (e.touches.length > 1) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
+    document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
     });
 }
 
 async function handleAutoLogin() {
     try {
-        // Verificar token de sesión
         const token = localStorage.getItem('auth_token');
         if (!token) {
             throw new Error('No token found');
         }
         
-        // Validar token con servidor
         const response = await fetch(`${APP_CONFIG.api.baseUrl}/auth/validate`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1548,11 +1771,8 @@ async function handleAutoLogin() {
             throw new Error('Invalid token');
         }
         
-        // Cargar datos del usuario
         const userData = await response.json();
         appState.setUser(userData);
-        
-        // Mostrar dashboard
         uiManager.navigateTo('dashboard');
         
     } catch (error) {
@@ -1563,11 +1783,12 @@ async function handleAutoLogin() {
 }
 
 function showLoginScreen() {
-    uiManager.navigateTo('login');
+    if (uiManager) {
+        uiManager.navigateTo('login');
+    }
 }
 
 function showErrorScreen(error) {
-    // Mostrar pantalla de error
     const errorScreen = document.createElement('div');
     errorScreen.className = 'error-screen';
     errorScreen.innerHTML = `
@@ -1591,12 +1812,10 @@ async function initializeServiceWorker() {
             const registration = await navigator.serviceWorker.register('service-worker.js');
             console.log('ServiceWorker registered:', registration);
             
-            // Verificar actualizaciones
             registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
                 newWorker.addEventListener('statechange', () => {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // Nueva actualización disponible
                         showUpdateNotification();
                     }
                 });
@@ -1609,7 +1828,7 @@ async function initializeServiceWorker() {
 }
 
 function showUpdateNotification() {
-    if (Notification.permission === 'granted') {
+    if ('Notification' in window && Notification.permission === 'granted') {
         const notification = new Notification('PasoReal Pro Actualizado', {
             body: 'Hay una nueva versión disponible. Recarga para actualizar.',
             icon: 'icons/icon-192.png',
@@ -1623,7 +1842,6 @@ function showUpdateNotification() {
 }
 
 function setupAnalytics() {
-    // Configurar Google Analytics o similar
     if (typeof gtag !== 'undefined') {
         gtag('config', 'GA_MEASUREMENT_ID', {
             app_name: APP_CONFIG.name,
@@ -1633,15 +1851,17 @@ function setupAnalytics() {
 }
 
 function setupBackgroundUpdates() {
-    // Sincronizar datos en segundo plano
-    setInterval(async () => {
-        if (appState.isOnline && appState.user) {
+    const syncInterval = setInterval(async () => {
+        if (appState && appState.isOnline && appState.user) {
             await syncData();
         }
-    }, 300000); // Cada 5 minutos
+    }, 300000);
     
-    // Actualizar notificaciones push
-    if ('PushManager' in window) {
+    if (uiManager) {
+        uiManager.updateIntervals.push(syncInterval);
+    }
+    
+    if ('PushManager' in window && 'Notification' in window) {
         setupPushNotifications();
     }
 }
@@ -1651,7 +1871,6 @@ async function syncData() {
         const token = localStorage.getItem('auth_token');
         if (!token) return;
         
-        // Sincronizar estadísticas
         const response = await fetch(`${APP_CONFIG.api.baseUrl}/sync`, {
             method: 'POST',
             headers: {
@@ -1673,31 +1892,41 @@ async function syncData() {
 }
 
 function setupPushNotifications() {
-    Notification.requestPermission().then(permission => {
-        if (permission === 'granted') {
-            // Suscribir al usuario
-            subscribeToPushNotifications();
-        }
-    });
+    if (!('Notification' in window)) {
+        console.log('This browser does not support notifications');
+        return;
+    }
+    
+    if (Notification.permission === 'granted') {
+        subscribeToPushNotifications();
+    } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                subscribeToPushNotifications();
+            }
+        });
+    }
 }
 
 async function subscribeToPushNotifications() {
-    const registration = await navigator.serviceWorker.ready;
-    const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY'
-    });
-    
-    // Enviar suscripción al servidor
-    await fetch(`${APP_CONFIG.api.baseUrl}/push/subscribe`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscription)
-    });
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY'
+        });
+        
+        await fetch(`${APP_CONFIG.api.baseUrl}/push/subscribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subscription)
+        });
+    } catch (error) {
+        console.error('Push subscription failed:', error);
+    }
 }
 
 function clearOldCache() {
-    // Limpiar caché viejo de localStorage
     const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     
     for (let i = 0; i < localStorage.length; i++) {
@@ -1709,7 +1938,6 @@ function clearOldCache() {
                     localStorage.removeItem(key);
                 }
             } catch (e) {
-                // Ignorar errores de parseo
             }
         }
     }
@@ -1721,17 +1949,10 @@ function clearOldCache() {
 window.startRoute = async function(routeId) {
     try {
         uiManager.showLoading('Cargando experiencia 360°...');
-        
-        // Cargar ruta
         await vrSystem.loadRoute(routeId);
-        
-        // Iniciar tracker de fitness
         fitnessTracker.startSession();
-        
-        // Navegar a pantalla VR
         uiManager.navigateTo('vr');
         
-        // Reproducir automáticamente
         setTimeout(() => {
             vrSystem.play();
         }, 1000);
@@ -1739,6 +1960,7 @@ window.startRoute = async function(routeId) {
     } catch (error) {
         console.error('Failed to start route:', error);
         uiManager.showNotification('Error', 'No se pudo cargar la ruta', 'error');
+        uiManager.navigateBack();
     } finally {
         uiManager.hideLoading();
     }
@@ -1749,11 +1971,15 @@ window.openAICoach = function() {
 };
 
 window.toggleVR = function() {
-    vrSystem.toggleVRMode();
+    if (vrSystem) {
+        vrSystem.toggleVRMode();
+    }
 };
 
 window.endRoute = function() {
-    fitnessTracker.endSession();
+    if (fitnessTracker) {
+        fitnessTracker.endSession();
+    }
     uiManager.navigateTo('routeSummary');
 };
 
@@ -1762,10 +1988,21 @@ window.endRoute = function() {
 // ================================
 document.addEventListener('DOMContentLoaded', initializeApp);
 
-// Manejar tecla ESC para salir de VR
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && vrSystem.isVRMode) {
+    if (e.key === 'Escape' && vrSystem && vrSystem.isVRMode) {
         vrSystem.toggleVRMode();
     }
 });
 
+setTimeout(() => {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen && loadingScreen.classList.contains('active')) {
+        console.log('Loading timeout, showing login screen');
+        loadingScreen.classList.remove('active');
+        
+        const loginScreen = document.getElementById('login');
+        if (loginScreen) {
+            loginScreen.classList.add('active');
+        }
+    }
+}, 10000);
