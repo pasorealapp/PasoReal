@@ -9,561 +9,578 @@
                minimum-scale=1.0, 
                user-scalable=no,
                viewport-fit=cover">
-  <title>PasoReal - Camina el Mundo en 360°</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>PasoReal Pro - Realidad Virtual 360° con IA</title>
   
+  <!-- PWA Configuration -->
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Sistema avanzado de realidad virtual 360° con IA para entrenamiento y exploración">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/apple-icon.png">
+  
+  <!-- Preconnect critical domains -->
+  <link rel="preconnect" href="https://customer-cw0heb9gadqlxjsv.cloudflarestream.com">
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="preconnect" href="https://aframe.io">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  
+  <!-- JavaScript Libraries -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@latest"></script>
   
-  <!-- iOS meta tags importantes -->
+  <!-- iOS specific -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PasoReal Pro">
   <meta name="format-detection" content="telephone=no">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="PasoReal Pro - Realidad Virtual 360°">
+  <meta property="og:description" content="Experiencia inmersiva con IA para entrenamiento y exploración">
+  <meta property="og:image" content="icons/icon-512.png">
+  <meta property="og:url" content="https://pasoreal.pro">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <!-- VIDEO FONDO LOGIN -->
-  <video id="bgVideo" autoplay muted loop playsinline webkit-playsinline preload="auto"></video>
-
-  <!-- LOGIN -->
-  <div id="login" class="screen active">
-    <div class="card">
-      <h1>Iniciar sesión</h1>
-      <p>Accede a tu experiencia PasoReal</p>
-      <input type="email" placeholder="Correo">
-      <input type="password" placeholder="Contraseña">
-      <button class="primary">Entrar</button>
-      <button class="link" id="recoverBtn">Recuperar contraseña</button>
-      <br>
-      <button class="link" id="goRegisterBtn">Crear cuenta</button>
-    </div>
-  </div>
-
-  <!-- REGISTRO -->
-  <div id="register" class="screen">
-    <div class="card">
-      <h1>Crear cuenta</h1>
-      <p>Accede a PasoReal</p>
-      <div class="row">
-        <input type="text" placeholder="Nombre">
-        <input type="text" placeholder="Apellido">
+  <!-- Audio Elements -->
+  <audio id="ambientSound" loop></audio>
+  <audio id="achievementSound"></audio>
+  <audio id="notificationSound"></audio>
+  
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="screen active">
+    <div class="loading-content">
+      <div class="logo-animation">
+        <div class="logo-circle"></div>
+        <div class="logo-pulse"></div>
+        <h1 class="logo-text">PASOREAL<span class="logo-pro">PRO</span></h1>
       </div>
-      <input type="email" placeholder="Correo">
-      <input type="password" placeholder="Contraseña">
-      <input type="tel" placeholder="Teléfono (opcional)">
-      <button class="primary">Crear cuenta</button>
-      <button class="link" id="goLoginBtn">Ya tengo cuenta</button>
+      <div class="loading-progress">
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+        <span id="loadingText">Inicializando sistema IA...</span>
+        <div class="loading-stats">
+          <div class="stat-item">
+            <i class="fas fa-brain"></i>
+            <span>Cargando red neuronal...</span>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-video"></i>
+            <span>Preparando video 360°...</span>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-map"></i>
+            <span>Cargando mapas...</span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   
-  <!-- RECUPERAR -->
-  <div id="recover" class="screen">
-    <div class="card">
-      <h1>Recuperar contraseña</h1>
-      <p>Ingresa tu correo o teléfono vinculado</p>
-      <input type="text" placeholder="Correo o teléfono">
-      <button class="primary">Enviar enlace</button>
-      <button class="link" id="cancelRecoverBtn">Cancelar</button>
-    </div>
-  </div>
-
-  <!-- INICIO -->
-  <div id="home" class="screen">
-    <div class="home-container">
-      <span class="badge">Experiencia Premium</span>
-      <h1>¿Dónde quieres caminar hoy?</h1>
-      <p>Elige una experiencia real</p>
-      <div class="option-card primary-card">
-        <strong>Elegir ruta</strong>
-        <small>Explora destinos reales en 360°</small>
-      </div>
-      <div class="option-card secondary-card">
-        <strong>Ver historial</strong>
-        <small>Tus caminatas anteriores</small>
-      </div>
-      <button class="logout-btn">Cerrar sesión</button>
-      <footer>PasoReal · Camina el mundo desde casa</footer>
-    </div>
-  </div>
-
-  <!-- ESTADOS -->
-  <div id="states" class="screen">
-    <div class="home-container">
-      <h1>Elige un estado</h1>
-      <p>La República Mexicana está formada por 32 estados. Elige uno para comenzar tu recorrido.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Aguascalientes</div>
-        <div class="option-card primary-card">Baja California</div>
-        <div class="option-card primary-card">Baja California Sur</div>
-        <div class="option-card primary-card">Campeche</div>
-        <div class="option-card primary-card">Chiapas</div>
-        <div class="option-card primary-card">Chihuahua</div>
-        <div class="option-card primary-card">Ciudad de México</div>
-        <div class="option-card primary-card">Coahuila</div>
-        <div class="option-card primary-card">Colima</div>
-        <div class="option-card primary-card">Durango</div>
-        <div class="option-card primary-card">Estado de México</div>
-        <div class="option-card primary-card">Guanajuato</div>
-        <div class="option-card primary-card">Guerrero</div>
-        <div class="option-card primary-card">Hidalgo</div>
-        <div class="option-card primary-card">Jalisco</div>
-        <div class="option-card primary-card">Michoacán</div>
-        <div class="option-card primary-card">Morelos</div>
-        <div class="option-card primary-card">Nayarit</div>
-        <div class="option-card primary-card">Nuevo León</div>
-        <div class="option-card primary-card">Oaxaca</div>
-        <div class="option-card primary-card">Puebla</div>
-        <div class="option-card primary-card">Querétaro</div>
-        <div class="option-card primary-card">Quintana Roo</div>
-        <div class="option-card primary-card">San Luis Potosí</div>
-        <div class="option-card primary-card">Sinaloa</div>
-        <div class="option-card primary-card">Sonora</div>
-        <div class="option-card primary-card">Tabasco</div>
-        <div class="option-card primary-card">Tamaulipas</div>
-        <div class="option-card primary-card">Tlaxcala</div>
-        <div class="option-card primary-card">Veracruz</div>
-        <div class="option-card primary-card">Yucatán</div>
-        <div class="option-card primary-card">Zacatecas</div>
-      </div>
-      <button class="link2" id="backHomeFromStates">Volver</button>
-    </div>
-  </div>
-
-  <!-- AGUASCALIENTES -->
-  <div id="aguascalientes" class="screen">
-    <div class="home-container">
-      <h1>Aguascalientes</h1>
-      <p>El estado de Aguascalientes está formado por 11 municipios. Elige uno para continuar.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Aguascalientes</div>
-        <div class="option-card primary-card">Asientos</div>
-        <div class="option-card primary-card">Calvillo</div>
-        <div class="option-card primary-card">Cosío</div>
-        <div class="option-card primary-card">Jesús María</div>
-        <div class="option-card primary-card">Pabellón de Arteaga</div>
-        <div class="option-card primary-card">Rincón de Romos</div>
-        <div class="option-card primary-card">San Francisco de los Romo</div>
-        <div class="option-card primary-card">San José de Gracia</div>
-        <div class="option-card primary-card">Tepezalá</div>
-        <div class="option-card primary-card">El Llano</div>
-      </div>
-      <button class="link2" id="backToStatesFromAgs">Volver</button>
-    </div>
-  </div>
-
-  <!-- BAJA CALIFORNIA -->
-  <div id="bajaCalifornia" class="screen">
-    <div class="home-container">
-      <h1>Baja California</h1>
-      <p>El estado de Baja California está formado por 7 municipios. Elige uno para continuar.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Ensenada</div>
-        <div class="option-card primary-card">Mexicali</div>
-        <div class="option-card primary-card">Tecate</div>
-        <div class="option-card primary-card">Tijuana</div>
-        <div class="option-card primary-card">Playas de Rosarito</div>
-        <div class="option-card primary-card">San Quintín</div>
-        <div class="option-card primary-card">San Felipe</div>
-      </div>
-      <button class="link2" id="backToStatesFromBC">Volver</button>
-    </div>
-  </div>
-  
-  <!-- TIJUANA RUTAS -->
-  <div id="tijuanaRutas" class="screen">
-    <div class="home-container">
-      <h1>Tijuana</h1>
-      <p>Explora las rutas disponibles en Tijuana, Baja California.</p>
-      <div class="states-list">
-        <div class="option-card primary-card" id="goToTijuanaRevolucion">Av. Revolución</div>
-        <div class="option-card primary-card" id="goToTijuanaPlayas">Playas de Tijuana</div>
-        <div class="option-card primary-card" id="goToTijuanaCentro">Centro de Tijuana</div>
-      </div>
-      <button class="link2" id="backToBCFromTijuana">Volver</button>
-    </div>
-  </div>
-
-  <!-- MEXICALI RUTAS -->
-  <div id="mexicaliRutas" class="screen">
-    <div class="home-container">
-      <h1>Mexicali</h1>
-      <p>Explora las rutas disponibles en Mexicali, Baja California.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Centro de Mexicali</div>
-        <div class="option-card primary-card">Zona Río</div>
-        <div class="option-card primary-card">Plaza La Cachanilla</div>
-      </div>
-      <button class="link2" id="backToBCFromMexicali">Volver</button>
-    </div>
-  </div>
-
-  <!-- ENSENADA RUTAS -->
-  <div id="ensenadaRutas" class="screen">
-    <div class="home-container">
-      <h1>Ensenada</h1>
-      <p>Explora las rutas disponibles en Ensenada, Baja California.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Malecón de Ensenada</div>
-        <div class="option-card primary-card">Avenida López Mateos</div>
-        <div class="option-card primary-card">Plaza Cívica</div>
-      </div>
-      <button class="link2" id="backToBCFromEnsenada">Volver</button>
-    </div>
-  </div>
-
-  <!-- TECATE RUTAS -->
-  <div id="tecateRutas" class="screen">
-    <div class="home-container">
-      <h1>Tecate</h1>
-      <p>Explora las rutas disponibles en Tecate, Baja California.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Centro Histórico</div>
-        <div class="option-card primary-card">Cervecería Tecate</div>
-        <div class="option-card primary-card">Parque Hidalgo</div>
-      </div>
-      <button class="link2" id="backToBCFromTecate">Volver</button>
-    </div>
-  </div>
-
-  <!-- ROSARITO RUTAS -->
-  <div id="rosaritoRutas" class="screen">
-    <div class="home-container">
-      <h1>Playas de Rosarito</h1>
-      <p>Explora las rutas disponibles en Rosarito, Baja California.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Bulevar Benito Juárez</div>
-        <div class="option-card primary-card">Plaza del Mar</div>
-        <div class="option-card primary-card">Playa de Rosarito</div>
-      </div>
-      <button class="link2" id="backToBCFromRosarito">Volver</button>
-    </div>
-  </div>
-
-  <!-- SAN QUINTÍN RUTAS -->
-  <div id="sanQuintinRutas" class="screen">
-    <div class="home-container">
-      <h1>San Quintín</h1>
-      <p>Explora las rutas disponibles en San Quintín, Baja California.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Bahía de San Quintín</div>
-        <div class="option-card primary-card">Campo agrícolas</div>
-        <div class="option-card primary-card">Volcán el Socorro</div>
-      </div>
-      <button class="link2" id="backToBCFromSanQuintin">Volver</button>
-    </div>
-  </div>
-
-  <!-- SAN FELIPE RUTAS -->
-  <div id="sanFelipeRutas" class="screen">
-    <div class="home-container">
-      <h1>San Felipe</h1>
-      <p>Explora las rutas disponibles en San Felipe, Baja California.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Malecón de San Felipe</div>
-        <div class="option-card primary-card">Zona Hotelera</div>
-        <div class="option-card primary-card">Playa pública</div>
-      </div>
-      <button class="link2" id="backToBCFromSanFelipe">Volver</button>
-    </div>
-  </div>
-
-  <!-- BAJA CALIFORNIA SUR -->
-  <div id="bajaCaliforniaSur" class="screen">
-    <div class="home-container">
-      <h1>Baja California Sur</h1>
-      <p>El estado de Baja California Sur está formado por 5 municipios. Elige uno para continuar.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">La Paz</div>
-        <div class="option-card primary-card">Los Cabos</div>
-        <div class="option-card primary-card">Comondú</div>
-        <div class="option-card primary-card">Loreto</div>
-        <div class="option-card primary-card">Mulegé</div>
-      </div>
-      <button class="link2" id="backToStatesFromBCS">Volver</button>
-    </div>
-  </div>
-
-  <!-- LA PAZ - ZONAS -->
-  <div id="laPazZonas" class="screen">
-    <div class="home-container">
-      <h1>La Paz</h1>
-      <p>El municipio de La Paz incluye zonas urbanas y localidades con identidad propia. Elige dónde deseas explorar.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">La Paz (Ciudad)</div>
-        <div class="option-card primary-card">Todos Santos</div>
-      </div>
-      <button class="link2" id="backToBCSFromLaPazZonas">Volver</button>
-    </div>
-  </div>
-
-  <!-- RUTAS - LA PAZ CIUDAD -->
-  <div id="laPazCiudadRutas" class="screen">
-    <div class="home-container">
-      <h1>La Paz</h1>
-      <p>La Paz es la capital de Baja California Sur, reconocida por su malecón, playas tranquilas y su cercanía con el Mar de Cortés. Elige una ruta para comenzar.</p>
-      <div class="states-list">
-        <div class="option-card primary-card" id="goToMalecon">Malecón de La Paz</div>
-        <div class="option-card primary-card" id="goToCentro">Centro Histórico</div>
-        <div class="option-card primary-card">Playa El Coromuel</div>
-        <div class="option-card primary-card">Playa Balandra</div>
-      </div>
-      <button class="link2" id="backToLaPazZonasFromCiudad">Volver</button>
-    </div>
-  </div>
-
-  <!-- RUTA - MALECÓN DE LA PAZ -->
-  <div id="maleconLaPazRuta" class="screen">
-    <!-- iOS Permission Overlay -->
-    <div id="iosPermissionOverlay" class="ios-permission-overlay" style="display: none;">
-      <div class="permission-content">
-        <div class="permission-icon">📱</div>
-        <h2>Vista 360°</h2>
-        <p>Para una experiencia inmersiva, necesitamos acceso a los sensores de movimiento de tu dispositivo.</p>
-        <p><small>Esto permite que el video gire según muevas tu teléfono.</small></p>
-        <button id="enableMotion" class="primary motion-btn">
-          Activar vista 360°
-        </button>
-        <button id="skipMotion" class="link motion-skip">
-          Continuar sin 360°
-        </button>
-      </div>
-    </div>
+  <!-- Main App Container -->
+  <div id="appContainer" style="display: none;">
     
-    
-    
-    <!-- 🔄 AVISO ROTAR CELULAR -->
-  <div id="rotateOverlay" class="rotate-overlay">
-    <div class="rotate-box">
-      🔄<br>
-      Para una mejor experiencia<br>
-      <strong>voltea tu teléfono</strong>
-    </div>
-  </div>
-    
-    <div class="game-hud">
-      <div class="hud-item">
-        <span id="stepsValue">0</span>
-        <small>Pasos</small>
-      </div>
-      <div class="hud-item">
-        <span id="distanceValue">0.00</span>
-        <small>Km</small>
-      </div>
-    </div>
-    
-    <div class="mini-map">
-      <div id="minileafletMap"></div>
-      <button class="map-close">×</button>
-    </div>
-    
-    <!-- En la pantalla maleconLaPazRuta -->
-<div class="video-container">
-    <!-- SOLO UN a-scene -->
-    <a-scene 
-      embedded 
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
-      renderer="antialias: true; precision: medium;"
-      loading-screen="enabled: false"
-      style="position: fixed; inset: 0; width: 100vw; height: 100vh;"
-    >
-      <a-assets>
-        <video
-          id="malecon360"
-          muted
-          playsinline
-          webkit-playsinline
-          preload="auto"
-          crossorigin="anonymous">
-        </video>
-      </a-assets>
+    <!-- VIDEO FONDO LOGIN -->
+    <video id="bgVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" crossorigin="anonymous"></video>
 
-      <a-camera
-        look-controls="enabled: true; touchEnabled: true; mouseEnabled: true; reverseMouseDrag: true"
-        wasd-controls="enabled: false"
-        position="0 0 0"
-        rotation="0 0 0">
-      </a-camera>
+    <!-- LOGIN Screen -->
+    <div id="login" class="screen">
+      <div class="login-container">
+        <div class="brand-header">
+          <h1 class="brand-title">
+            <i class="fas fa-walking"></i> PasoReal<span class="pro-badge">PRO</span>
+          </h1>
+          <p class="brand-subtitle">Realidad Virtual 360° con Inteligencia Artificial</p>
+        </div>
+        
+        <div class="login-card">
+          <div class="card-header">
+            <h2><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</h2>
+            <p class="card-subtitle">Accede a tu experiencia inmersiva</p>
+          </div>
+          
+          <form id="loginForm">
+            <div class="input-group">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
+              <div class="input-validation"></div>
+            </div>
+            
+            <div class="input-group">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" id="loginPassword" placeholder="Contraseña" required>
+              <button type="button" class="toggle-password" id="togglePassword">
+                <i class="fas fa-eye"></i>
+              </button>
+              <div class="input-validation"></div>
+            </div>
+            
+            <div class="form-options">
+              <label class="checkbox">
+                <input type="checkbox" id="rememberMe">
+                <span>Recordar sesión</span>
+              </label>
+              <a href="#" class="text-link" id="forgotPassword">¿Olvidaste tu contraseña?</a>
+            </div>
+            
+            <button type="submit" class="btn-primary btn-lg" id="loginBtn">
+              <i class="fas fa-rocket"></i> Iniciar Experiencia
+            </button>
+            
+            <div class="social-login">
+              <p class="divider">o continuar con</p>
+              <div class="social-buttons">
+                <button type="button" class="btn-social google">
+                  <i class="fab fa-google"></i> Google
+                </button>
+                <button type="button" class="btn-social apple">
+                  <i class="fab fa-apple"></i> Apple
+                </button>
+              </div>
+            </div>
+            
+            <div class="login-footer">
+              <p>¿No tienes cuenta? <a href="#" class="text-link" id="goRegisterBtn">Regístrate aquí</a></p>
+              <p class="small-text">Al registrarte, aceptas nuestros <a href="#" class="text-link">Términos</a> y <a href="#" class="text-link">Política de Privacidad</a></p>
+            </div>
+          </form>
+        </div>
+        
+        <div class="login-features">
+          <div class="feature-item">
+            <i class="fas fa-robot"></i>
+            <span>IA Personalizada</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-vr-cardboard"></i>
+            <span>VR 360°</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-heartbeat"></i>
+            <span>Fitness Tracking</span>
+          </div>
+          <div class="feature-item">
+            <i class="fas fa-trophy"></i>
+            <span>Logros</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
-      <a-videosphere
-        id="videoSphere"
-        src="#malecon360"
-        rotation="0 -90 0"
-        radius="500">
-      </a-videosphere>
-    </a-scene>
-  </div>
-    
-    <div class="route-controls">
+    <!-- REGISTER Screen -->
+    <div id="register" class="screen">
+      <div class="login-container">
+        <div class="brand-header">
+          <h1 class="brand-title">
+            <i class="fas fa-user-plus"></i> Crear Cuenta
+          </h1>
+          <p class="brand-subtitle">Comienza tu viaje inmersivo</p>
+        </div>
+        
+        <div class="login-card">
+          <div class="card-header">
+            <h2><i class="fas fa-user-circle"></i> Perfil Personal</h2>
+            <p class="card-subtitle">Configura tu experiencia ideal</p>
+          </div>
+          
+          <form id="registerForm">
+            <div class="row">
+              <div class="input-group">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" id="firstName" placeholder="Nombre" required>
+                <div class="input-validation"></div>
+              </div>
+              <div class="input-group">
+                <input type="text" id="lastName" placeholder="Apellido" required>
+                <div class="input-validation"></div>
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="registerEmail" placeholder="Correo electrónico" required>
+              <div class="input-validation"></div>
+            </div>
+            
+            <div class="input-group">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" id="registerPassword" placeholder="Contraseña (mínimo 8 caracteres)" required>
+              <div class="password-strength">
+                <div class="strength-bar"></div>
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <i class="fas fa-calendar-alt input-icon"></i>
+              <input type="date" id="birthDate" required>
+              <div class="input-validation"></div>
+            </div>
+            
+            <div class="input-group">
+              <i class="fas fa-venus-mars input-icon"></i>
+              <select id="gender" required>
+                <option value="">Género</option>
+                <option value="male">Masculino</option>
+                <option value="female">Femenino</option>
+                <option value="other">Otro</option>
+              </select>
+              <div class="input-validation"></div>
+            </div>
+            
+            <div class="input-group">
+              <i class="fas fa-ruler input-icon"></i>
+              <input type="number" id="height" placeholder="Estatura (cm)" required>
+              <div class="input-validation"></div>
+            </div>
+            
+            <div class="input-group">
+              <i class="fas fa-weight input-icon"></i>
+              <input type="number" id="weight" placeholder="Peso (kg)" required>
+              <div class="input-validation"></div>
+            </div>
+            
+            <div class="form-section">
+              <h3><i class="fas fa-bullseye"></i> Objetivos de Fitness</h3>
+              <div class="goals-grid">
+                <label class="goal-card">
+                  <input type="radio" name="goal" value="weightloss" required>
+                  <div class="goal-content">
+                    <i class="fas fa-fire"></i>
+                    <span>Pérdida de peso</span>
+                  </div>
+                </label>
+                <label class="goal-card">
+                  <input type="radio" name="goal" value="fitness">
+                  <div class="goal-content">
+                    <i class="fas fa-running"></i>
+                    <span>Acondicionamiento</span>
+                  </div>
+                </label>
+                <label class="goal-card">
+                  <input type="radio" name="goal" value="stress">
+                  <div class="goal-content">
+                    <i class="fas fa-spa"></i>
+                    <span>Reducción de estrés</span>
+                  </div>
+                </label>
+                <label class="goal-card">
+                  <input type="radio" name="goal" value="exploration">
+                  <div class="goal-content">
+                    <i class="fas fa-globe-americas"></i>
+                    <span>Exploración</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            
+            <div class="form-options">
+              <label class="checkbox">
+                <input type="checkbox" id="terms" required>
+                <span>Acepto los Términos de Servicio y Política de Privacidad</span>
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" id="newsletter">
+                <span>Recibir notificaciones y ofertas especiales</span>
+              </label>
+            </div>
+            
+            <button type="submit" class="btn-primary btn-lg" id="registerBtn">
+              <i class="fas fa-magic"></i> Crear Experiencia Personalizada
+            </button>
+            
+            <div class="login-footer">
+              <p>¿Ya tienes cuenta? <a href="#" class="text-link" id="goLoginBtn">Inicia sesión</a></p>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard" class="screen">
+      <!-- Navigation Bar -->
+      <nav class="navbar">
+        <div class="nav-left">
+          <button class="nav-btn" id="menuToggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="user-greeting">
+            <span id="userGreeting">¡Hola, Explorador!</span>
+            <small id="userMotivation">El mundo te espera</small>
+          </div>
+        </div>
+        <div class="nav-center">
+          <h1 class="nav-title">
+            <i class="fas fa-compass"></i> PasoReal<span class="pro-badge">PRO</span>
+          </h1>
+        </div>
+        <div class="nav-right">
+          <button class="nav-btn notification-btn" id="notificationBtn">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge">3</span>
+          </button>
+          <div class="user-avatar" id="userMenuBtn">
+            <img src="" alt="User" id="userAvatar">
+          </div>
+        </div>
+      </nav>
       
-      <button class="control-btn danger" id="endRoute">Finalizar</button>
+      <!-- Sidebar Menu -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-user">
+            <img src="" alt="User" id="sidebarAvatar">
+            <div class="user-info">
+              <h3 id="sidebarUserName">Usuario</h3>
+              <span class="user-level" id="userLevel">Nivel 1</span>
+            </div>
+          </div>
+          <button class="close-sidebar" id="closeSidebar">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="sidebar-menu">
+          <a href="#" class="menu-item active" data-screen="home">
+            <i class="fas fa-home"></i>
+            <span>Inicio</span>
+          </a>
+          <a href="#" class="menu-item" data-screen="explore">
+            <i class="fas fa-globe-americas"></i>
+            <span>Explorar</span>
+          </a>
+          <a href="#" class="menu-item" data-screen="workouts">
+            <i class="fas fa-dumbbell"></i>
+            <span>Entrenamientos</span>
+            <span class="menu-badge">Nuevo</span>
+          </a>
+          <a href="#" class="menu-item" data-screen="challenges">
+            <i class="fas fa-trophy"></i>
+            <span>Desafíos</span>
+          </a>
+          <a href="#" class="menu-item" data-screen="social">
+            <i class="fas fa-users"></i>
+            <span>Social</span>
+            <span class="menu-badge" id="socialBadge">5</span>
+          </a>
+          <a href="#" class="menu-item" data-screen="stats">
+            <i class="fas fa-chart-line"></i>
+            <span>Estadísticas</span>
+          </a>
+          <a href="#" class="menu-item" data-screen="aiCoach">
+            <i class="fas fa-robot"></i>
+            <span>Coach IA</span>
+          </a>
+          <a href="#" class="menu-item" data-screen="settings">
+            <i class="fas fa-cog"></i>
+            <span>Configuración</span>
+          </a>
+        </div>
+        
+        <div class="sidebar-footer">
+          <div class="user-stats">
+            <div class="stat">
+              <span class="stat-value" id="stepsToday">0</span>
+              <span class="stat-label">Pasos hoy</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" id="currentStreak">0</span>
+              <span class="stat-label">Días racha</span>
+            </div>
+            <div class="stat">
+              <span class="stat-value" id="xpPoints">0</span>
+              <span class="stat-label">XP</span>
+            </div>
+          </div>
+          <button class="btn-logout" id="logoutBtn">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+          </button>
+        </div>
+      </div>
+      
+      <!-- Main Content Area -->
+      <div class="main-content" id="mainContent">
+        <!-- Home Screen -->
+        <div class="screen-section active" id="homeScreen">
+          <div class="dashboard-hero">
+            <div class="hero-content">
+              <h1 class="hero-title" id="dailyGreeting">Buenos días</h1>
+              <p class="hero-subtitle" id="dailyMotivation">¡Es un gran día para explorar!</p>
+              <div class="hero-stats">
+                <div class="hero-stat">
+                  <i class="fas fa-fire"></i>
+                  <div>
+                    <span class="stat-number" id="caloriesToday">0</span>
+                    <span class="stat-label">Calorías</span>
+                  </div>
+                </div>
+                <div class="hero-stat">
+                  <i class="fas fa-road"></i>
+                  <div>
+                    <span class="stat-number" id="distanceToday">0.0</span>
+                    <span class="stat-label">Km hoy</span>
+                  </div>
+                </div>
+                <div class="hero-stat">
+                  <i class="fas fa-clock"></i>
+                  <div>
+                    <span class="stat-number" id="activeTime">0</span>
+                    <span class="stat-label">Min activo</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="hero-weather">
+              <div class="weather-card" id="weatherCard">
+                <i class="fas fa-sun"></i>
+                <div>
+                  <span class="weather-temp">25°C</span>
+                  <span class="weather-location">Ciudad de México</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="quick-actions">
+            <h2 class="section-title">
+              <i class="fas fa-bolt"></i> Acciones Rápidas
+            </h2>
+            <div class="actions-grid">
+              <button class="action-card primary-action" id="quickStartRoute">
+                <i class="fas fa-play-circle"></i>
+                <span>Iniciar Ruta</span>
+              </button>
+              <button class="action-card" id="quickChallenge">
+                <i class="fas fa-trophy"></i>
+                <span>Desafío Diario</span>
+              </button>
+              <button class="action-card" id="quickSocial">
+                <i class="fas fa-users"></i>
+                <span>Unirse a Grupo</span>
+              </button>
+              <button class="action-card" id="quickAI">
+                <i class="fas fa-robot"></i>
+                <span>Coach IA</span>
+              </button>
+            </div>
+          </div>
+          
+          <div class="recommended-routes">
+            <div class="section-header">
+              <h2 class="section-title">
+                <i class="fas fa-star"></i> Recomendado para ti
+              </h2>
+              <a href="#" class="see-all">Ver todo</a>
+            </div>
+            <div class="routes-carousel" id="recommendedRoutes">
+              <!-- Filled by JavaScript -->
+            </div>
+          </div>
+          
+          <div class="achievements-section">
+            <div class="section-header">
+              <h2 class="section-title">
+                <i class="fas fa-award"></i> Logros Recientes
+              </h2>
+              <a href="#" class="see-all">Ver todos</a>
+            </div>
+            <div class="achievements-grid" id="recentAchievements">
+              <!-- Filled by JavaScript -->
+            </div>
+          </div>
+          
+          <div class="ai-insights">
+            <div class="insight-card">
+              <div class="insight-header">
+                <i class="fas fa-brain"></i>
+                <h3>Insights de IA</h3>
+              </div>
+              <p id="aiInsightText">Basado en tu actividad, podrías mejorar tu ritmo en un 15% si...</p>
+              <button class="btn-text" id="viewInsightDetails">Ver detalles</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Explore Screen -->
+        <div class="screen-section" id="exploreScreen">
+          <!-- This will be filled dynamically -->
+        </div>
+        
+        <!-- Other screens will be added similarly -->
+      </div>
     </div>
     
-    <div class="speed-control">
-      <label for="speedRange">Velocidad: <span id="speedValue">0</span> km/h</label>
-      <input type="range" id="speedRange" min="0" max="6" step="0.5" value="0"/>
+    <!-- VR Experience Container -->
+    <div id="vrExperience" class="screen">
+      <!-- This is where the 360° experience happens -->
     </div>
-  </div>
-
-  <!-- RUTA FINALIZADA -->
-  <div id="routeFinish" class="screen">
-    <div class="finish-container">
-      <h1 class="finish-title">🏅 ¡Ruta completada!</h1>
-      <p class="finish-subtitle" id="finishSubtitle">Has finalizado tu recorrido.</p>
-      <div class="route-map">
-        <div id="leafletMap"></div>
-      </div>
-      <div class="route-summary">
-        <h3>Resumen del recorrido</h3>
-        <div class="summary-row">
-          <span>⏱️ Tiempo</span>
-          <strong id="finishTime">00:00</strong>
+    
+    <!-- AI Coach Modal -->
+    <div id="aiCoachModal" class="modal">
+      <div class="modal-content ai-coach">
+        <div class="coach-header">
+          <div class="coach-avatar">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div class="coach-info">
+            <h3>Coach IA - Alex</h3>
+            <span class="coach-specialty">Especialista en Fitness y Bienestar</span>
+          </div>
+          <button class="close-modal">&times;</button>
         </div>
-        <div class="summary-row">
-          <span>🥾 Pasos</span>
-          <strong id="finishSteps">0</strong>
+        <div class="coach-messages" id="coachChat">
+          <!-- Chat messages -->
         </div>
-        <div class="summary-row">
-          <span>📏 Distancia</span>
-          <strong id="finishDistance">0.00 km</strong>
-        </div>
-        <div class="summary-row">
-          <span>📍 Ruta</span>
-          <strong id="finishRouteName">Malecón de La Paz</strong>
+        <div class="coach-input">
+          <input type="text" id="coachInput" placeholder="Pregúntale a tu coach IA...">
+          <button id="sendCoachMessage">
+            <i class="fas fa-paper-plane"></i>
+          </button>
         </div>
       </div>
-      <div class="route-summary achievement">
-        <h3>🏆 Logro desbloqueado</h3>
-        <strong id="achievementTitle"></strong>
-        <p id="achievementDesc"></p>
+    </div>
+    
+    <!-- Notifications Panel -->
+    <div id="notificationsPanel" class="panel">
+      <div class="panel-header">
+        <h3>Notificaciones</h3>
+        <button class="panel-close">&times;</button>
       </div>
-      <div class="final-actions">
-        <button class="primary" id="backToRoutes">Volver a rutas</button>
-        <button class="primary" id="repeatRoute">Repetir recorrido</button>
+      <div class="notifications-list" id="notificationsList">
+        <!-- Notifications -->
       </div>
     </div>
-  </div>
-
-  <!-- RUTAS - TODOS SANTOS -->
-  <div id="todosSantosRutas" class="screen">
-    <div class="home-container">
-      <h1>Todos Santos</h1>
-      <p>Todos Santos es un Pueblo Mágico de Baja California Sur, reconocido por su arte, arquitectura histórica y cercanía con el océano Pacífico. Elige una ruta para comenzar.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Centro Histórico</div>
-        <div class="option-card primary-card">Galerías de Arte</div>
-        <div class="option-card primary-card">Playa Cerritos</div>
-        <div class="option-card primary-card">Playa San Pedrito</div>
-      </div>
-      <button class="link2" id="backToLaPazZonasFromTodosSantos">Volver</button>
+    
+    <!-- Background Elements -->
+    <div class="background-effects">
+      <div class="particles-container" id="particles"></div>
+      <div class="gradient-overlay"></div>
     </div>
   </div>
-
-  <!-- LOS CABOS -->
-  <div id="losCabos" class="screen">
-    <div class="home-container">
-      <h1>Los Cabos</h1>
-      <p>Los Cabos es un municipio único de Baja California Sur, conformado por dos zonas principales. Cada una ofrece experiencias distintas entre naturaleza, cultura y mar. Elige dónde deseas explorar.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Cabo San Lucas</div>
-        <div class="option-card primary-card">San José del Cabo</div>
-      </div>
-      <button class="link2" id="backToBCSFromLosCabos">Volver</button>
-    </div>
-  </div>
-
-  <!-- RUTAS - CABO SAN LUCAS -->
-  <div id="caboSanLucasRutas" class="screen">
-    <div class="home-container">
-      <h1>Cabo San Lucas</h1>
-      <p>Cabo San Lucas es conocido por sus playas, su marina, el Arco y su ambiente turístico. Elige una ruta para comenzar a explorar.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">El Arco de Cabo San Lucas</div>
-        <div class="option-card primary-card">Playa del Amor</div>
-        <div class="option-card primary-card">Marina Cabo San Lucas</div>
-        <div class="option-card primary-card">Playa Médano</div>
-        <div class="option-card primary-card">Centro Turístico</div>
-      </div>
-      <button class="link2" id="backToLosCabosFromCSL">Volver</button>
-    </div>
-  </div>
-
-  <!-- RUTAS - SAN JOSÉ DEL CABO -->
-  <div id="sanJoseDelCaboRutas" class="screen">
-    <div class="home-container">
-      <h1>San José del Cabo</h1>
-      <p>San José del Cabo destaca por su centro histórico, galerías de arte y playas tranquilas. Elige una ruta para comenzar.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Centro Histórico</div>
-        <div class="option-card primary-card">Distrito del Arte</div>
-        <div class="option-card primary-card">Playa Palmilla</div>
-        <div class="option-card primary-card">Playa Costa Azul</div>
-        <div class="option-card primary-card">Estero San José</div>
-      </div>
-      <button class="link2" id="backToLosCabosFromSJC">Volver</button>
-    </div>
-  </div>
-
-  <!-- COMONDÚ RUTAS -->
-  <div id="comonduRutas" class="screen">
-    <div class="home-container">
-      <h1>Comondú</h1>
-      <p>Explora las rutas disponibles en Comondú, Baja California Sur.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Ciudad Constitución</div>
-        <div class="option-card primary-card">Puerto Adolfo López Mateos</div>
-        <div class="option-card primary-card">Misión de San José de Comondú</div>
-      </div>
-      <button class="link2" id="backToBCSFromComondu">Volver</button>
-    </div>
-  </div>
-
-  <!-- LORETO RUTAS -->
-  <div id="loretoRutas" class="screen">
-    <div class="home-container">
-      <h1>Loreto</h1>
-      <p>Explora las rutas disponibles en Loreto, Baja California Sur.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Centro Histórico de Loreto</div>
-        <div class="option-card primary-card">Malecón de Loreto</div>
-        <div class="option-card primary-card">Misión de Loreto</div>
-      </div>
-      <button class="link2" id="backToBCSFromLoreto">Volver</button>
-    </div>
-  </div>
-
-  <!-- MULEGÉ RUTAS -->
-  <div id="mulegeRutas" class="screen">
-    <div class="home-container">
-      <h1>Mulegé</h1>
-      <p>Explora las rutas disponibles en Mulegé, Baja California Sur.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Santa Rosalía</div>
-        <div class="option-card primary-card">Bahía Concepción</div>
-        <div class="option-card primary-card">Misión de Santa Rosalía</div>
-      </div>
-      <button class="link2" id="backToBCSFromMulege">Volver</button>
-    </div>
-  </div>
-
-  <!-- LOS DEMÁS ESTADOS (solo agregué los necesarios para el ejemplo, puedes agregar los demás) -->
-  <div id="campeche" class="screen">
-    <div class="home-container">
-      <h1>Campeche</h1>
-      <p>El estado de Campeche está formado por 13 municipios. Elige uno para continuar.</p>
-      <div class="states-list">
-        <div class="option-card primary-card">Campeche</div>
-        <div class="option-card primary-card">Calkiní</div>
-        <div class="option-card primary-card">Calakmul</div>
-        <!-- ... resto de municipios ... -->
-      </div>
-      <button class="link2" id="backToStatesFromCampeche">Volver</button>
-    </div>
-  </div>
-
-  <!-- Agrega aquí los demás estados de manera similar -->
-
+  
+  <!-- JavaScript Files -->
   <script src="app.js"></script>
+  <script src="ai-engine.js"></script>
+  <script src="fitness-tracker.js"></script>
+  <script src="social-features.js"></script>
+  <script src="premium-features.js"></script>
+  <script>
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
 </body>
 </html>
