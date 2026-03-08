@@ -1,586 +1,526 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" 
-      content="width=device-width, 
-               initial-scale=1.0, 
-               maximum-scale=1.0, 
-               minimum-scale=1.0, 
-               user-scalable=no,
-               viewport-fit=cover">
-  <title>PasoReal Pro - Realidad Virtual 360° con IA</title>
-  
-  <!-- PWA Configuration -->
-  <meta name="theme-color" content="#0f172a">
-  <meta name="description" content="Sistema avanzado de realidad virtual 360° con IA para entrenamiento y exploración">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icons/apple-icon.png">
-  
-  <!-- Preconnect critical domains -->
-  <link rel="preconnect" href="https://customer-cw0heb9gadqlxjsv.cloudflarestream.com">
-  <link rel="preconnect" href="https://unpkg.com">
-  <link rel="preconnect" href="https://aframe.io">
-  
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover"
+  />
+
+  <title>PasoReal</title>
+  <meta name="theme-color" content="#0a101c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no" />
+
   <!-- CSS -->
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  
-  <!-- JavaScript Libraries -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@latest"></script>
-  
-  <!-- iOS specific -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="PasoReal Pro">
-  <meta name="format-detection" content="telephone=no">
-  
-  <!-- Open Graph -->
-  <meta property="og:title" content="PasoReal Pro - Realidad Virtual 360°">
-  <meta property="og:description" content="Experiencia inmersiva con IA para entrenamiento y exploración">
-  <meta property="og:image" content="icons/icon-512.png">
-  <meta property="og:url" content="https://pasoreal.pro">
-  
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body>
-  <!-- Audio Elements -->
-  <audio id="ambientSound" loop></audio>
-  <audio id="achievementSound"></audio>
-  <audio id="notificationSound"></audio>
-  
-  <!-- Loading Screen -->
-  <div id="loadingScreen" class="screen active">
-    <div class="loading-content">
-      <div class="logo-animation">
-        <div class="logo-circle"></div>
-        <div class="logo-pulse"></div>
-        <h1 class="logo-text">PASOREAL<span class="logo-pro">PRO</span></h1>
-      </div>
-      <div class="loading-progress">
-        <div class="progress-bar">
-          <div class="progress-fill"></div>
-        </div>
-        <span id="loadingText">Inicializando sistema IA...</span>
-        <div class="loading-stats">
-          <div class="stat-item">
-            <i class="fas fa-brain"></i>
-            <span>Cargando red neuronal...</span>
-          </div>
-          <div class="stat-item">
-            <i class="fas fa-video"></i>
-            <span>Preparando video 360°...</span>
-          </div>
-          <div class="stat-item">
-            <i class="fas fa-map"></i>
-            <span>Cargando mapas...</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Main App Container -->
-  <div id="appContainer" style="display: none;">
-    
-    <!-- VIDEO FONDO LOGIN -->
-    <video id="bgVideo" autoplay muted loop playsinline webkit-playsinline preload="auto" crossorigin="anonymous"></video>
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/utilities.css" />
+  <link rel="stylesheet" href="css/screens.css" />
+  <link rel="stylesheet" href="css/login.css" />
+  <link rel="stylesheet" href="css/home.css" />
+  <link rel="stylesheet" href="css/buttons.css" />
 
-    <!-- LOGIN Screen -->
-    <div id="login" class="screen">
-      <div class="login-container">
-        <div class="brand-header">
-          <h1 class="brand-title">
-            <i class="fas fa-walking"></i> PasoReal<span class="pro-badge">PRO</span>
-          </h1>
-          <p class="brand-subtitle">Realidad Virtual 360° con Inteligencia Artificial</p>
-        </div>
-        
-        <div class="login-card">
-          <div class="card-header">
-            <h2><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</h2>
-            <p class="card-subtitle">Accede a tu experiencia inmersiva</p>
-          </div>
-          
-          <form id="loginForm">
-            <div class="input-group">
-              <i class="fas fa-envelope input-icon"></i>
-              <input type="email" id="loginEmail" placeholder="Correo electrónico" required>
-              <div class="input-validation"></div>
-            </div>
-            
-            <div class="input-group">
-              <i class="fas fa-lock input-icon"></i>
-              <input type="password" id="loginPassword" placeholder="Contraseña" required>
-              <button type="button" class="toggle-password" id="togglePassword">
-                <i class="fas fa-eye"></i>
-              </button>
-              <div class="input-validation"></div>
-            </div>
-            
-            <div class="form-options">
-              <label class="checkbox">
-                <input type="checkbox" id="rememberMe">
-                <span>Recordar sesión</span>
-              </label>
-              <a href="#" class="text-link" id="forgotPassword">¿Olvidaste tu contraseña?</a>
-            </div>
-            
-            <button type="submit" class="btn-primary btn-lg" id="loginBtn">
-              <i class="fas fa-rocket"></i> Iniciar Experiencia
-            </button>
-            
-            <div class="social-login">
-              <p class="divider">o continuar con</p>
-              <div class="social-buttons">
-                <button type="button" class="btn-social google">
-                  <i class="fab fa-google"></i> Google
-                </button>
-                <button type="button" class="btn-social apple">
-                  <i class="fab fa-apple"></i> Apple
-                </button>
-              </div>
-            </div>
-            
-            <div class="login-footer">
-              <p>¿No tienes cuenta? <a href="#" class="text-link" id="goRegisterBtn">Regístrate aquí</a></p>
-              <p class="small-text">Al registrarte, aceptas nuestros <a href="#" class="text-link">Términos</a> y <a href="#" class="text-link">Política de Privacidad</a></p>
-            </div>
-          </form>
-        </div>
-        
-        <div class="login-features">
-          <div class="feature-item">
-            <i class="fas fa-robot"></i>
-            <span>IA Personalizada</span>
-          </div>
-          <div class="feature-item">
-            <i class="fas fa-vr-cardboard"></i>
-            <span>VR 360°</span>
-          </div>
-          <div class="feature-item">
-            <i class="fas fa-heartbeat"></i>
-            <span>Fitness Tracking</span>
-          </div>
-          <div class="feature-item">
-            <i class="fas fa-trophy"></i>
-            <span>Logros</span>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Rendimiento -->
+  <link rel="preconnect" href="https://customer-cw0heb9gadqlxjsv.cloudflarestream.com" />
+  <link rel="dns-prefetch" href="https://customer-cw0heb9gadqlxjsv.cloudflarestream.com" />
 
-    <!-- REGISTER Screen -->
-    <div id="register" class="screen">
-      <div class="login-container">
-        <div class="brand-header">
-          <h1 class="brand-title">
-            <i class="fas fa-user-plus"></i> Crear Cuenta
-          </h1>
-          <p class="brand-subtitle">Comienza tu viaje inmersivo</p>
-        </div>
-        
-        <div class="login-card">
-          <div class="card-header">
-            <h2><i class="fas fa-user-circle"></i> Perfil Personal</h2>
-            <p class="card-subtitle">Configura tu experiencia ideal</p>
-          </div>
-          
-          <form id="registerForm">
-            <div class="row">
-              <div class="input-group">
-                <i class="fas fa-user input-icon"></i>
-                <input type="text" id="firstName" placeholder="Nombre" required>
-                <div class="input-validation"></div>
-              </div>
-              <div class="input-group">
-                <input type="text" id="lastName" placeholder="Apellido" required>
-                <div class="input-validation"></div>
-              </div>
-            </div>
-            
-            <div class="input-group">
-              <i class="fas fa-envelope input-icon"></i>
-              <input type="email" id="registerEmail" placeholder="Correo electrónico" required>
-              <div class="input-validation"></div>
-            </div>
-            
-            <div class="input-group">
-              <i class="fas fa-lock input-icon"></i>
-              <input type="password" id="registerPassword" placeholder="Contraseña (mínimo 8 caracteres)" required>
-              <div class="password-strength">
-                <div class="strength-bar"></div>
-              </div>
-            </div>
-            
-            <div class="input-group">
-              <i class="fas fa-calendar-alt input-icon"></i>
-              <input type="date" id="birthDate" required>
-              <div class="input-validation"></div>
-            </div>
-            
-            <div class="input-group">
-              <i class="fas fa-venus-mars input-icon"></i>
-              <select id="gender" required>
-                <option value="">Género</option>
-                <option value="male">Masculino</option>
-                <option value="female">Femenino</option>
-                <option value="other">Otro</option>
-              </select>
-              <div class="input-validation"></div>
-            </div>
-            
-            <div class="input-group">
-              <i class="fas fa-ruler input-icon"></i>
-              <input type="number" id="height" placeholder="Estatura (cm)" required>
-              <div class="input-validation"></div>
-            </div>
-            
-            <div class="input-group">
-              <i class="fas fa-weight input-icon"></i>
-              <input type="number" id="weight" placeholder="Peso (kg)" required>
-              <div class="input-validation"></div>
-            </div>
-            
-            <div class="form-section">
-              <h3><i class="fas fa-bullseye"></i> Objetivos de Fitness</h3>
-              <div class="goals-grid">
-                <label class="goal-card">
-                  <input type="radio" name="goal" value="weightloss" required>
-                  <div class="goal-content">
-                    <i class="fas fa-fire"></i>
-                    <span>Pérdida de peso</span>
-                  </div>
-                </label>
-                <label class="goal-card">
-                  <input type="radio" name="goal" value="fitness">
-                  <div class="goal-content">
-                    <i class="fas fa-running"></i>
-                    <span>Acondicionamiento</span>
-                  </div>
-                </label>
-                <label class="goal-card">
-                  <input type="radio" name="goal" value="stress">
-                  <div class="goal-content">
-                    <i class="fas fa-spa"></i>
-                    <span>Reducción de estrés</span>
-                  </div>
-                </label>
-                <label class="goal-card">
-                  <input type="radio" name="goal" value="exploration">
-                  <div class="goal-content">
-                    <i class="fas fa-globe-americas"></i>
-                    <span>Exploración</span>
-                  </div>
-                </label>
-              </div>
-            </div>
-            
-            <div class="form-options">
-              <label class="checkbox">
-                <input type="checkbox" id="terms" required>
-                <span>Acepto los Términos de Servicio y Política de Privacidad</span>
-              </label>
-              <label class="checkbox">
-                <input type="checkbox" id="newsletter">
-                <span>Recibir notificaciones y ofertas especiales</span>
-              </label>
-            </div>
-            
-            <button type="submit" class="btn-primary btn-lg" id="registerBtn">
-              <i class="fas fa-magic"></i> Crear Experiencia Personalizada
-            </button>
-            
-            <div class="login-footer">
-              <p>¿Ya tienes cuenta? <a href="#" class="text-link" id="goLoginBtn">Inicia sesión</a></p>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- MAIN DASHBOARD -->
-    <div id="dashboard" class="screen">
-      <!-- Navigation Bar -->
-      <nav class="navbar">
-        <div class="nav-left">
-          <button class="nav-btn" id="menuToggle">
-            <i class="fas fa-bars"></i>
-          </button>
-          <div class="user-greeting">
-            <span id="userGreeting">¡Hola, Explorador!</span>
-            <small id="userMotivation">El mundo te espera</small>
-          </div>
-        </div>
-        <div class="nav-center">
-          <h1 class="nav-title">
-            <i class="fas fa-compass"></i> PasoReal<span class="pro-badge">PRO</span>
-          </h1>
-        </div>
-        <div class="nav-right">
-          <button class="nav-btn notification-btn" id="notificationBtn">
-            <i class="fas fa-bell"></i>
-            <span class="notification-badge">3</span>
-          </button>
-          <div class="user-avatar" id="userMenuBtn">
-            <img src="" alt="User" id="userAvatar">
-          </div>
-        </div>
-      </nav>
-      
-      <!-- Sidebar Menu -->
-      <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-          <div class="sidebar-user">
-            <img src="" alt="User" id="sidebarAvatar">
-            <div class="user-info">
-              <h3 id="sidebarUserName">Usuario</h3>
-              <span class="user-level" id="userLevel">Nivel 1</span>
-            </div>
-          </div>
-          <button class="close-sidebar" id="closeSidebar">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        
-        <div class="sidebar-menu">
-          <a href="#" class="menu-item active" data-screen="home">
-            <i class="fas fa-home"></i>
-            <span>Inicio</span>
-          </a>
-          <a href="#" class="menu-item" data-screen="explore">
-            <i class="fas fa-globe-americas"></i>
-            <span>Explorar</span>
-          </a>
-          <a href="#" class="menu-item" data-screen="workouts">
-            <i class="fas fa-dumbbell"></i>
-            <span>Entrenamientos</span>
-            <span class="menu-badge">Nuevo</span>
-          </a>
-          <a href="#" class="menu-item" data-screen="challenges">
-            <i class="fas fa-trophy"></i>
-            <span>Desafíos</span>
-          </a>
-          <a href="#" class="menu-item" data-screen="social">
-            <i class="fas fa-users"></i>
-            <span>Social</span>
-            <span class="menu-badge" id="socialBadge">5</span>
-          </a>
-          <a href="#" class="menu-item" data-screen="stats">
-            <i class="fas fa-chart-line"></i>
-            <span>Estadísticas</span>
-          </a>
-          <a href="#" class="menu-item" data-screen="aiCoach">
-            <i class="fas fa-robot"></i>
-            <span>Coach IA</span>
-          </a>
-          <a href="#" class="menu-item" data-screen="settings">
-            <i class="fas fa-cog"></i>
-            <span>Configuración</span>
-          </a>
-        </div>
-        
-        <div class="sidebar-footer">
-          <div class="user-stats">
-            <div class="stat">
-              <span class="stat-value" id="stepsToday">0</span>
-              <span class="stat-label">Pasos hoy</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value" id="currentStreak">0</span>
-              <span class="stat-label">Días racha</span>
-            </div>
-            <div class="stat">
-              <span class="stat-value" id="xpPoints">0</span>
-              <span class="stat-label">XP</span>
-            </div>
-          </div>
-          <button class="btn-logout" id="logoutBtn">
-            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
-          </button>
-        </div>
-      </div>
-      
-      <!-- Main Content Area -->
-      <div class="main-content" id="mainContent">
-        <!-- Home Screen -->
-        <div class="screen-section active" id="homeScreen">
-          <div class="dashboard-hero">
-            <div class="hero-content">
-              <h1 class="hero-title" id="dailyGreeting">Buenos días</h1>
-              <p class="hero-subtitle" id="dailyMotivation">¡Es un gran día para explorar!</p>
-              <div class="hero-stats">
-                <div class="hero-stat">
-                  <i class="fas fa-fire"></i>
-                  <div>
-                    <span class="stat-number" id="caloriesToday">0</span>
-                    <span class="stat-label">Calorías</span>
-                  </div>
-                </div>
-                <div class="hero-stat">
-                  <i class="fas fa-road"></i>
-                  <div>
-                    <span class="stat-number" id="distanceToday">0.0</span>
-                    <span class="stat-label">Km hoy</span>
-                  </div>
-                </div>
-                <div class="hero-stat">
-                  <i class="fas fa-clock"></i>
-                  <div>
-                    <span class="stat-number" id="activeTime">0</span>
-                    <span class="stat-label">Min activo</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="hero-weather">
-              <div class="weather-card" id="weatherCard">
-                <i class="fas fa-sun"></i>
-                <div>
-                  <span class="weather-temp">25°C</span>
-                  <span class="weather-location">Ciudad de México</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="quick-actions">
-            <h2 class="section-title">
-              <i class="fas fa-bolt"></i> Acciones Rápidas
-            </h2>
-            <div class="actions-grid">
-              <button class="action-card primary-action" id="quickStartRoute">
-                <i class="fas fa-play-circle"></i>
-                <span>Iniciar Ruta</span>
-              </button>
-              <button class="action-card" id="quickChallenge">
-                <i class="fas fa-trophy"></i>
-                <span>Desafío Diario</span>
-              </button>
-              <button class="action-card" id="quickSocial">
-                <i class="fas fa-users"></i>
-                <span>Unirse a Grupo</span>
-              </button>
-              <button class="action-card" id="quickAI">
-                <i class="fas fa-robot"></i>
-                <span>Coach IA</span>
-              </button>
-            </div>
-          </div>
-          
-          <div class="recommended-routes">
-            <div class="section-header">
-              <h2 class="section-title">
-                <i class="fas fa-star"></i> Recomendado para ti
-              </h2>
-              <a href="#" class="see-all">Ver todo</a>
-            </div>
-            <div class="routes-carousel" id="recommendedRoutes">
-              <!-- Filled by JavaScript -->
-            </div>
-          </div>
-          
-          <div class="achievements-section">
-            <div class="section-header">
-              <h2 class="section-title">
-                <i class="fas fa-award"></i> Logros Recientes
-              </h2>
-              <a href="#" class="see-all">Ver todos</a>
-            </div>
-            <div class="achievements-grid" id="recentAchievements">
-              <!-- Filled by JavaScript -->
-            </div>
-          </div>
-          
-          <div class="ai-insights">
-            <div class="insight-card">
-              <div class="insight-header">
-                <i class="fas fa-brain"></i>
-                <h3>Insights de IA</h3>
-              </div>
-              <p id="aiInsightText">Basado en tu actividad, podrías mejorar tu ritmo en un 15% si...</p>
-              <button class="btn-text" id="viewInsightDetails">Ver detalles</button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Explore Screen -->
-        <div class="screen-section" id="exploreScreen">
-          <!-- This will be filled dynamically -->
-        </div>
-        
-        <!-- Other screens will be added similarly -->
-      </div>
-    </div>
-    
-    <!-- VR Experience Container -->
-    <div id="vrExperience" class="screen">
-      <!-- This is where the 360° experience happens -->
-    </div>
-    
-    <!-- AI Coach Modal -->
-    <div id="aiCoachModal" class="modal">
-      <div class="modal-content ai-coach">
-        <div class="coach-header">
-          <div class="coach-avatar">
-            <i class="fas fa-robot"></i>
-          </div>
-          <div class="coach-info">
-            <h3>Coach IA - Alex</h3>
-            <span class="coach-specialty">Especialista en Fitness y Bienestar</span>
-          </div>
-          <button class="close-modal">&times;</button>
-        </div>
-        <div class="coach-messages" id="coachChat">
-          <!-- Chat messages -->
-        </div>
-        <div class="coach-input">
-          <input type="text" id="coachInput" placeholder="Pregúntale a tu coach IA...">
-          <button id="sendCoachMessage">
-            <i class="fas fa-paper-plane"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Notifications Panel -->
-    <div id="notificationsPanel" class="panel">
-      <div class="panel-header">
-        <h3>Notificaciones</h3>
-        <button class="panel-close">&times;</button>
-      </div>
-      <div class="notifications-list" id="notificationsList">
-        <!-- Notifications -->
-      </div>
-    </div>
-    
-    <!-- Background Elements -->
-    <div class="background-effects">
-      <div class="particles-container" id="particles"></div>
-      <div class="gradient-overlay"></div>
-    </div>
-  </div>
-  
-  <!-- JavaScript Files -->
-  <script src="app.js"></script>
-  <script src="ai-engine.js"></script>
-  <script src="fitness-tracker.js"></script>
-  <script src="social-features.js"></script>
-  <script src="premium-features.js"></script>
-  <script>
-    // Register Service Worker for PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js');
+  <!-- A-Frame -->
+  <script defer src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <style>
+  /* Fondo base */
+  .screen {
+    background-color: #0a101c;
+  }
+
+  /* Modal historial */
+  #historyModal {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  #historyModal .card {
+    max-width: 520px;
+    width: 92%;
+  }
+
+  /* Textarea general */
+  textarea {
+    background: rgba(0, 0, 0, 0.25);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 10px;
+  }
+
+  input {
+    color-scheme: dark;
+  }
+
+  /* Admin responsive */
+  #adminScreen .home-container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 14px;
+  }
+
+  #adminScreen input,
+  #adminScreen textarea,
+  #adminScreen button {
+    font-size: 16px;
+  }
+
+  #adminScreen .card {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  #adminScreen textarea {
+    width: 100%;
+    min-height: 120px;
+  }
+
+  @media (max-width: 420px) {
+    #adminScreen .home-container {
+      padding: 10px;
     }
-  </script>
+
+    #adminScreen h1 {
+      font-size: 20px;
+    }
+
+    #adminScreen button {
+      width: 100%;
+    }
+
+    #adminScreen textarea {
+      min-height: 220px;
+    }
+  }
+</style>
+</head>
+
+<body>
+  <!-- LOGIN -->
+  <div id="login" class="screen active">
+    <!-- Video fondo -->
+    <video
+      id="bgVideo"
+      autoplay
+      muted
+      loop
+      playsinline
+      webkit-playsinline
+      preload="metadata"
+      aria-hidden="true"
+      style="pointer-events:none; position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:-1;"
+    >
+      <!-- Reemplaza con tu video real -->
+      <source src="https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/f456f64d303feeb7969b16dfa9c83ca4/manifest/video.m3u8" type="application/x-mpegURL" />
+      <!-- Fallback opcional mp4 -->
+      <!-- <source src="assets/video/login-bg.mp4" type="video/mp4" /> -->
+    </video>
+
+    <div class="card" style="position:relative; z-index:1;">
+      <h1>Iniciar sesión</h1>
+      <p>Accede a tu experiencia PasoReal</p>
+
+      <input id="loginEmail" type="email" placeholder="Correo" autocomplete="email" />
+      <input id="loginPassword" type="password" placeholder="Contraseña" autocomplete="current-password" />
+
+      <div id="authMsg" style="margin-top:10px; opacity:.95;"></div>
+
+      <button id="btnLogin" class="primary" type="button">Entrar</button>
+      <button id="btnForgot" class="link" type="button">Olvidé mi contraseña</button>
+      <button id="goToRegister" class="link" type="button">Crear cuenta</button>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div id="register" class="screen">
+    <div class="card">
+      <h1>Crear cuenta</h1>
+
+      <input type="text" id="regNombre" placeholder="Nombre" autocomplete="given-name" />
+      <input type="text" id="regApellido" placeholder="Apellido" autocomplete="family-name" />
+      <input type="email" id="regEmail" placeholder="Correo" autocomplete="email" />
+      <input type="password" id="regPassword" placeholder="Contraseña" autocomplete="new-password" />
+
+      <div id="regMsg" style="margin-top:10px; opacity:.95;"></div>
+
+      <button id="btnRegister" class="primary" type="button">Registrarse</button>
+      <button id="goToLogin" class="link" type="button">Ya tengo cuenta</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div id="home" class="screen">
+    <div class="home-container">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <button id="openMenu" class="link2" type="button" aria-label="Abrir menú" style="font-size:22px; padding:10px 12px;">☰</button>
+        <div style="flex:1;"></div>
+      </div>
+
+      <h1 id="homeGreeting">¿Dónde quieres caminar hoy?</h1>
+      <p id="homeSubGreeting">Elige una experiencia real</p>
+
+      <div class="states-list">
+        <div class="option-card primary-card" id="btnChooseRoute" role="button" tabindex="0">
+          <strong>Elegir ruta</strong>
+          <small>Explora destinos reales</small>
+        </div>
+
+        <!-- Selector de modo -->
+        <div class="option-card" id="modeSelector" style="display:none;">
+          <strong>Selecciona modo</strong>
+          <div id="modeButtons" style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;"></div>
+        </div>
+      </div>
+
+      <button id="goToHistory" class="link2" type="button">Ver historial</button>
+      <button id="btnLogout" class="link" type="button">Cerrar sesión</button>
+
+      <footer id="secretFooter" style="margin-top:20px; opacity:.7;">
+        PasoReal · Camina el mundo desde casa
+      </footer>
+    </div>
+  </div>
+
+  <!-- MEMBERSHIP -->
+  <div id="membershipScreen" class="screen">
+    <div class="home-container">
+      <h1 id="membershipTitle">🔒 Membresía requerida</h1>
+<p id="membershipTopText" style="opacity:.85; line-height:1.5;">
+  Tu cuenta está <strong>desactivada</strong> por defecto.
+  Cuando hagas tu pago, envía tu comprobante y el admin activará tu acceso.
+</p>
+
+      <div class="card" style="text-align:left;">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div style="width:56px; height:56px; border-radius:16px; background: rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; font-size:26px;">🙎‍♂️</div>
+          <div style="min-width:0;">
+            <div id="memberName" style="font-weight:800;">—</div>
+            <div id="memberUid" style="opacity:.75; font-size:12px; word-break:break-all;">UID: —</div>
+            <div id="memberPaidUntil" style="opacity:.85; margin-top:6px;">Vence: —</div>
+          </div>
+        </div>
+
+        <div id="memberMsg" style="margin-top:12px; opacity:.95;"></div>
+
+        <button id="btnSendProofWhatsApp" class="primary" type="button" style="width:100%; margin-top:10px;">
+          Enviar comprobante por WhatsApp
+        </button>
+        <button id="btnSendProofEmail" class="primary" type="button" style="width:100%; margin-top:10px;">
+          Enviar comprobante por correo
+        </button>
+
+        <button id="btnRefreshMembership" class="link2" type="button" style="width:100%; margin-top:10px;">
+          Ya pagué, revisar acceso
+        </button>
+
+        <button id="btnLogoutFromMembership" class="link" type="button" style="width:100%; margin-top:12px;">
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="profileScreen" class="screen">
+    <div class="home-container">
+      <h1>Perfil</h1>
+      <p id="profileHint" style="opacity:.8;">Edita tus datos</p>
+
+      <div class="card" style="text-align:left;">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <div id="profileAvatar" style="width:64px; height:64px; border-radius:18px; background: rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; font-size:28px;">🙎‍♂️</div>
+          <div style="min-width:0;">
+            <div id="profilePublicId" style="font-weight:700; font-size:18px;">—</div>
+            <div id="profileEmail" style="opacity:.8; font-size:14px; word-break:break-all;">—</div>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <label style="opacity:.85;" for="profileNombre">Nombre</label>
+          <input id="profileNombre" placeholder="Nombre" />
+        </div>
+
+        <div style="margin-top:14px;">
+          <label style="opacity:.85;" for="profileApellido">Apellido</label>
+          <input id="profileApellido" placeholder="Apellido" />
+        </div>
+
+        <div style="margin-top:14px;">
+          <label style="opacity:.85;" for="profileTelefono">Teléfono (opcional)</label>
+          <input id="profileTelefono" placeholder="Ej: 6121234567" inputmode="tel" />
+        </div>
+
+        <div style="margin-top:14px;">
+          <label style="opacity:.85;" for="profileEdad">Edad (opcional)</label>
+          <input id="profileEdad" placeholder="Ej: 30" inputmode="numeric" />
+        </div>
+
+        <div style="margin-top:14px;">
+          <label style="opacity:.85;" for="profilePeso">Peso kg (opcional)</label>
+          <input id="profilePeso" placeholder="Ej: 82.5" inputmode="decimal" />
+        </div>
+
+        <div style="margin-top:14px;">
+          <label style="opacity:.85;" for="profileAltura">Altura cm (opcional)</label>
+          <input id="profileAltura" placeholder="Ej: 175" inputmode="numeric" />
+        </div>
+
+        <div id="profileMsg" style="margin-top:12px; opacity:.95;"></div>
+
+        <button id="saveProfile" class="primary" type="button" style="width:100%; margin-top:10px;">Guardar</button>
+        <button class="link2" id="backToHomeFromProfile" type="button" style="width:100%; margin-top:10px;">Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div id="historyScreen" class="screen">
+    <div class="home-container">
+      <h1>Historial</h1>
+      <p id="historyAccountLabel" style="opacity:.8;"></p>
+      <div id="historyList" class="states-list"></div>
+      <button class="link2" id="backToHomeFromHistory" type="button">Volver</button>
+    </div>
+  </div>
+
+  <!-- MODAL DETALLE HISTORIAL -->
+  <div id="historyModal" class="overlay" aria-hidden="true">
+    <div class="card">
+      <h2>Detalle</h2>
+      <div id="historyModalBody" style="text-align:left; line-height:1.5; margin-top:10px;"></div>
+      <button class="primary" id="closeHistoryModal" type="button" style="margin-top:12px;">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- SELECTOR -->
+  <div id="selector" class="screen">
+    <div class="home-container">
+      <h1 id="selectorTitle">Selecciona</h1>
+      <p id="selectorSubtitle" style="opacity:.8;"></p>
+      <div id="selectorList" class="states-list"></div>
+      <button id="selectorBack" class="link2" type="button">Volver</button>
+    </div>
+  </div>
+
+  <!-- PANTALLA 360 -->
+  <div id="routeScreen" class="screen">
+    <div id="route360Container"></div>
+
+    <div id="rotateOverlay" class="rotate-overlay">Gira tu teléfono para continuar</div>
+    <div id="startOverlay" class="overlay">Toca la pantalla para comenzar</div>
+
+    <div id="fitnessHUD">
+      <div class="stats-panel">
+        <div class="stat-item">
+          <span class="stat-label">Pasos</span>
+          <span id="stepsValue" class="stat-value">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Distancia</span>
+          <span id="distanceValue" class="stat-value">0.00 km</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mini-map" id="miniMapContainer" style="display:none;">
+      <div class="mini-map-header">
+        <button id="miniMapToggle" type="button">−</button>
+      </div>
+      <div id="miniMap"></div>
+    </div>
+
+    <div class="controls">
+      <input type="range" id="speedControl" min="0" max="8" value="0" step="0.5" />
+      <button id="finishBtn" type="button">Finalizar</button>
+    </div>
+  </div>
+
+  <!-- FINISH SCREEN -->
+<div id="finishScreen" class="screen finish-screen">
+  <div class="finish-card">
+    <div class="finish-header">
+      <h1>🏅 ¡Ruta completada!</h1>
+      <p class="finish-subtitle" id="finishSubtitle"></p>
+    </div>
+
+    <div class="finish-map">
+      <div id="finishMap"></div>
+    </div>
+
+    <h2 class="finish-section-title">Resumen del recorrido</h2>
+
+    <div class="finish-summary">
+      <div class="finish-stat-card">
+        <span>⏱️ Tiempo</span>
+        <strong id="finishTime">0:00</strong>
+      </div>
+      <div class="finish-stat-card">
+        <span>🥾 Pasos</span>
+        <strong id="finishSteps">0</strong>
+      </div>
+      <div class="finish-stat-card">
+        <span>📏 Distancia</span>
+        <strong id="finishDistance">0.00 km</strong>
+      </div>
+      <div class="finish-stat-card">
+        <span>📍 Ruta</span>
+        <strong id="finishRoute">—</strong>
+      </div>
+    </div>
+
+    <div class="finish-achievement" id="finishAchievementBox">
+      <h3>🏆 Logro desbloqueado</h3>
+      <strong id="finishAchievementTitle">—</strong>
+      <p id="finishAchievementDesc"></p>
+    </div>
+
+    <div class="finish-actions">
+      <button id="backToRoutes" class="link2" type="button">Volver a rutas</button>
+      <button id="repeatRoute" class="primary" type="button">Repetir recorrido</button>
+    </div>
+  </div>
+</div>
+
+  <!-- ADMIN SCREEN -->
+  <div id="adminScreen" class="screen">
+    <div class="home-container">
+      <h1>Admin PasoReal</h1>
+      <p style="opacity:.8;">Control total</p>
+
+      <div id="adminMsg" style="margin:10px 0; opacity:.95;"></div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button id="adminBtnUsers" class="primary" type="button">Usuarios</button>
+        <button id="adminBtnCatalog" class="primary" type="button">Catálogo</button>
+        <button id="adminBackHome" class="link2" type="button">Volver</button>
+      </div>
+
+      <!-- TAB: USERS -->
+      <div id="adminTabUsers" style="margin-top:14px; display:none;">
+        <button id="adminRefreshUsers" class="primary" type="button" style="width:100%;">Actualizar lista</button>
+        <div id="adminUsersList" class="states-list" style="margin-top:12px;"></div>
+      </div>
+
+      <!-- TAB: CATALOG -->
+      <div id="adminTabCatalog" style="margin-top:14px; display:none;">
+        <div class="card" style="text-align:left;">
+          <h3>Agregar rápido</h3>
+
+          <div style="margin-top:10px;">
+            <strong>País</strong>
+            <input id="cKey" placeholder="key ej: mexico" />
+            <input id="cName" placeholder="Nombre ej: México" />
+            <button id="adminAddCountry" class="primary" type="button" style="width:100%;">Agregar país</button>
+          </div>
+
+          <div style="margin-top:14px;">
+            <strong>Estado</strong>
+            <input id="sCountryKey" placeholder="countryKey ej: mexico" />
+            <input id="sKey" placeholder="stateKey ej: baja_california_sur" />
+            <input id="sName" placeholder="Nombre ej: Baja California Sur" />
+            <button id="adminAddState" class="primary" type="button" style="width:100%;">Agregar estado</button>
+          </div>
+
+          <div style="margin-top:14px;">
+            <strong>Ciudad / Municipio</strong>
+            <input id="ctCountryKey" placeholder="countryKey" />
+            <input id="ctStateKey" placeholder="stateKey" />
+            <input id="ctKey" placeholder="cityKey ej: la_paz" />
+            <input id="ctName" placeholder="Nombre ej: La Paz" />
+            <button id="adminAddCity" class="primary" type="button" style="width:100%;">Agregar ciudad</button>
+          </div>
+
+          <div style="margin-top:14px;">
+            <strong>Ruta</strong>
+            <input id="rCountryKey" placeholder="countryKey" />
+            <input id="rStateKey" placeholder="stateKey" />
+            <input id="rCityKey" placeholder="cityKey" />
+            <input id="rKey" placeholder="routeKey ej: malecon_lapaz" />
+            <input id="rName" placeholder="Nombre ej: Malecón de La Paz" />
+            <input id="rVideo" placeholder="video url/archivo (opcional)" />
+            <textarea id="rGeoJSON" placeholder="GeoJSON (opcional)"></textarea>
+            <button id="adminAddRoute" class="primary" type="button" style="width:100%;">Agregar ruta</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px; text-align:left;">
+          <h3>Editor JSON (APP_DATA)</h3>
+          <textarea id="adminCatalogJSON" style="width:100%; height:280px;"></textarea>
+          <button id="adminSaveCatalogJSON" class="primary" type="button" style="margin-top:10px; width:100%;">Guardar catálogo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU -->
+  <div id="menuOverlay" class="overlay" style="display:none; align-items:stretch; justify-content:flex-start; padding:0;">
+    <div id="menuDrawer" style="width:86%; max-width:360px; height:100%; background: rgba(10,16,28,0.98); border-right:1px solid rgba(255,255,255,.08); padding:16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
+        <strong style="font-size:18px;">Menú</strong>
+        <button id="closeMenu" class="link2" type="button" aria-label="Cerrar menú">✕</button>
+      </div>
+
+      <div style="margin-top:14px; display:flex; gap:12px; align-items:center;">
+        <div id="menuAvatar" style="width:52px; height:52px; border-radius:16px; background: rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; font-size:24px;">🙎‍♂️</div>
+        <div style="min-width:0;">
+          <div id="menuName" style="font-weight:700;">Usuario</div>
+          <div id="menuUid" style="opacity:.75; font-size:12px; word-break:break-all;">—</div>
+        </div>
+      </div>
+
+      <div style="margin-top:18px; display:flex; flex-direction:column; gap:10px;">
+        <button id="menuGoProfile" class="primary" type="button">Perfil</button>
+        <button id="menuGoHistory" class="primary" type="button">Historial</button>
+        <button id="menuGoMembership" class="primary" type="button">Membresía</button>
+        <button id="menuLogout" class="link" type="button">Cerrar sesión</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS base -->
+  <script defer src="js/variables.js"></script>
+  <script defer src="js/accountConfig.js"></script>
+  <script defer src="js/data.js"></script>
+  <script defer src="js/utils.js"></script>
+
+  <!-- Firebase -->
+  <script defer src="js/firebase.js"></script>
+  <script defer src="js/auth.js"></script>
+
+  <!-- Roles -->
+  <script defer src="js/roles.js"></script>
+
+  <!-- Storage + history -->
+  <script defer src="js/storage.js"></script>
+  <script defer src="js/history.js"></script>
+
+  <!-- UI / navegación -->
+  <script defer src="js/router.js"></script>
+  <script defer src="js/ui.js"></script>
+
+  <!-- Menú / perfil / admin -->
+  <script defer src="js/menu.js"></script>
+  <script defer src="js/profile.js"></script>
+  <script defer src="js/admin.js"></script>
+
+  <!-- 360 -->
+  <script defer src="js/miniMapEngine.js"></script>
+  <script defer src="js/finish.js"></script>
+  <script defer src="js/route360.js"></script>
+
+  <!-- App boot -->
+  <script defer src="js/app.js"></script>
 </body>
 </html>
