@@ -14,12 +14,12 @@
   <meta name="format-detection" content="telephone=no" />
 
   <!-- CSS -->
-  <link rel="stylesheet" href="reset.css" />
-  <link rel="stylesheet" href="utilities.css" />
-  <link rel="stylesheet" href="screens.css" />
-  <link rel="stylesheet" href="login.css" />
-  <link rel="stylesheet" href="home.css" />
-  <link rel="stylesheet" href="buttons.css" />
+  <link rel="stylesheet" href="css/reset.css" />
+  <link rel="stylesheet" href="css/utilities.css" />
+  <link rel="stylesheet" href="css/screens.css" />
+  <link rel="stylesheet" href="css/login.css" />
+  <link rel="stylesheet" href="css/home.css" />
+  <link rel="stylesheet" href="css/buttons.css" />
 
   <!-- Rendimiento -->
   <link rel="preconnect" href="https://customer-cw0heb9gadqlxjsv.cloudflarestream.com" />
@@ -133,13 +133,17 @@
       <p>Accede a tu experiencia PasoReal</p>
 
       <input id="loginEmail" type="email" placeholder="Correo" autocomplete="email" />
-      <input id="loginPassword" type="password" placeholder="Contraseña" autocomplete="current-password" />
 
-      <div id="authMsg" style="margin-top:10px; opacity:.95;"></div>
+<div class="password-field">
+  <input id="loginPassword" type="password" placeholder="Contraseña" autocomplete="current-password" />
+  <button id="toggleLoginPassword" class="password-toggle" type="button" aria-label="Mostrar u ocultar contraseña">👁</button>
+</div>
 
-      <button id="btnLogin" class="primary" type="button">Entrar</button>
-      <button id="btnForgot" class="link" type="button">Olvidé mi contraseña</button>
-      <button id="goToRegister" class="link" type="button">Crear cuenta</button>
+<div id="authMsg" style="margin-top:10px; opacity:.95;"></div>
+
+<button id="btnLogin" class="primary" type="button">Entrar</button>
+<button id="btnForgot" class="link" type="button">Olvidé mi contraseña</button>
+<button id="goToRegister" class="link" type="button">Crear cuenta</button>
     </div>
   </div>
 
@@ -149,17 +153,41 @@
       <h1>Crear cuenta</h1>
 
       <input type="text" id="regNombre" placeholder="Nombre" autocomplete="given-name" />
-      <input type="text" id="regApellido" placeholder="Apellido" autocomplete="family-name" />
-      <input type="email" id="regEmail" placeholder="Correo" autocomplete="email" />
-      <input type="password" id="regPassword" placeholder="Contraseña" autocomplete="new-password" />
+<input type="text" id="regApellido" placeholder="Apellido" autocomplete="family-name" />
+<input type="email" id="regEmail" placeholder="Correo" autocomplete="email" />
 
-      <div id="regMsg" style="margin-top:10px; opacity:.95;"></div>
+<div class="password-field">
+  <input type="password" id="regPassword" placeholder="Contraseña" autocomplete="new-password" />
+  <button id="toggleRegPassword" class="password-toggle" type="button" aria-label="Mostrar u ocultar contraseña">👁</button>
+</div>
 
-      <button id="btnRegister" class="primary" type="button">Registrarse</button>
-      <button id="goToLogin" class="link" type="button">Ya tengo cuenta</button>
+<div id="passwordRules" class="password-rules">
+  Debe tener mínimo 8 caracteres, una mayúscula, una minúscula, un número y un carácter especial.
+</div>
+
+<div id="regMsg" style="margin-top:10px; opacity:.95;"></div>
+
+<button id="btnRegister" class="primary" type="button">Registrarse</button>
+<button id="goToLogin" class="link" type="button">Ya tengo cuenta</button>
     </div>
   </div>
 
+<!-- FORGOT PASSWORD -->
+  <div id="forgotScreen" class="screen">
+    <div class="card">
+    <h1>Recuperar contraseña</h1>
+    <p>Escribe tu correo y te enviaremos un enlace para restablecerla.</p>
+
+    <input id="forgotEmail" type="email" placeholder="Correo" autocomplete="email" />
+
+    <div id="forgotMsg" style="margin-top:10px; opacity:.95;"></div>
+
+    <button id="btnSendReset" class="primary" type="button">Enviar enlace</button>
+    <button id="backToLoginFromForgot" class="link" type="button">Volver a iniciar sesión</button>
+  </div>
+</div>
+  
+  
   <!-- HOME -->
   <div id="home" class="screen">
     <div class="home-container">
@@ -490,37 +518,37 @@
   </div>
 
   <!-- JS base -->
-  <script defer src="variables.js"></script>
-  <script defer src="accountConfig.js"></script>
-  <script defer src="data.js"></script>
-  <script defer src="utils.js"></script>
+  <script defer src="js/variables.js"></script>
+  <script defer src="js/accountConfig.js"></script>
+  <script defer src="js/data.js"></script>
+  <script defer src="js/utils.js"></script>
 
   <!-- Firebase -->
-  <script defer src="firebase.js"></script>
-  <script defer src="auth.js"></script>
+  <script defer src="js/firebase.js"></script>
+  <script defer src="js/auth.js"></script>
 
   <!-- Roles -->
-  <script defer src="roles.js"></script>
+  <script defer src="js/roles.js"></script>
 
   <!-- Storage + history -->
-  <script defer src="storage.js"></script>
-  <script defer src="history.js"></script>
+  <script defer src="js/storage.js"></script>
+  <script defer src="js/history.js"></script>
 
   <!-- UI / navegación -->
-  <script defer src="router.js"></script>
-  <script defer src="ui.js"></script>
+  <script defer src="js/router.js"></script>
+  <script defer src="js/ui.js"></script>
 
   <!-- Menú / perfil / admin -->
-  <script defer src="menu.js"></script>
-  <script defer src="profile.js"></script>
-  <script defer src="admin.js"></script>
+  <script defer src="js/menu.js"></script>
+  <script defer src="js/profile.js"></script>
+  <script defer src="js/admin.js"></script>
 
   <!-- 360 -->
-  <script defer src="miniMapEngine.js"></script>
-  <script defer src="finish.js"></script>
-  <script defer src="route360.js"></script>
+  <script defer src="js/miniMapEngine.js"></script>
+  <script defer src="js/finish.js"></script>
+  <script defer src="js/route360.js"></script>
 
   <!-- App boot -->
-  <script defer src="app.js"></script>
+  <script defer src="js/app.js"></script>
 </body>
 </html>
