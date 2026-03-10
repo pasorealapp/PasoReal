@@ -1,0 +1,77 @@
+/* home.css - Pantalla de inicio y listados */
+
+.home-container {
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+}
+
+.home-container > h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.home-container > p {
+  color: #cbd5e1;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.option-card {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.option-card:hover {
+  background: rgba(51, 65, 85, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.option-card.primary-card {
+  border-left: 4px solid #0ea5e9;
+}
+
+.option-card.secondary-card {
+  border-left: 4px solid #8b5cf6;
+}
+
+.option-card strong {
+  display: block;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: #f1f5f9;
+}
+
+.option-card small {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.states-list {
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#selectorList .option-card,
+#home .states-list .option-card {
+  text-align: center;
+  cursor: pointer;
+}
+
+#secretFooter {
+  margin-top: 3rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
