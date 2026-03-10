@@ -12,7 +12,7 @@ window.APP_DATA = {
               malecon_lapaz: {
                 id: "malecon_lapaz",
                 name: "Malecón de La Paz",
-                video: "12345.mp4",
+                video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/8aa913ae75d3814cce9a27bd280d2c4a/manifest/video.m3u8",
                 geojson: {
                   type: "FeatureCollection",
                   features: [
