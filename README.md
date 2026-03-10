@@ -1,2 +1,0 @@
-# PasoReal
-Plataforma web PasoReal
