@@ -38,9 +38,9 @@ window.APP_DATA = {
                 }
               },
 
-              centro_historico: {
-                id: "centro_historico",
-                name: "Centro Histórico",
+              playa_el_tecolote: {
+                id: "playa_el_tecolote",
+                name: "Playa el Tecolote",
                 video: "assets/videos/centro_historico.mp4",
                 geojson: {
                   type: "FeatureCollection",
@@ -49,19 +49,24 @@ window.APP_DATA = {
                       type: "Feature",
                       geometry: {
                         type: "LineString",
-                        coordinates: [
-                          [-110.3169, 24.1625],
-                          [-110.3160, 24.1610],
-                          [-110.3150, 24.1595]
-                        ]
+                        "coordinates": [
+                           [-110.3172041, 24.3364496],
+                           [-110.3172041, 24.3364496],
+                           [-110.3172061, 24.3364496],
+                           [-110.317634, 24.3364287],
+                           [-110.3182832, 24.33634],
+                           [-110.3185146, 24.3363198],
+                           [-110.3193967, 24.3362747],
+                           [-110.3197463, 24.3362573],
+                           [-110.3244408, 24.3357579]
                       },
                       properties: {}
                     }
                   ]
                 },
                 achievement: {
-                  title: "Explorador del Centro Histórico",
-                  description: "Recorrido completado en el centro de La Paz"
+                  title: "Explorador del Tecolote",
+                  description: "Recorrido completado en la Playa el Tecolote"
                 }
               }
             }
