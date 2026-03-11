@@ -12,7 +12,7 @@ window.APP_DATA = {
               malecon_lapaz: {
                 id: "malecon_lapaz",
                 name: "Malecón de La Paz",
-                video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/10ac873a161207846254bb189091b06f/manifest/video.m3u8",
+                video: "12345.mp4",
                 geojson: {
                   type: "FeatureCollection",
                   features: [
@@ -38,9 +38,9 @@ window.APP_DATA = {
                 }
               },
 
-              playa_el_tecolote: {
-                id: "playa_el_tecolote",
-                name: "Playa el Tecolote",
+              centro_historico: {
+                id: "centro_historico",
+                name: "Centro Histórico",
                 video: "assets/videos/centro_historico.mp4",
                 geojson: {
                   type: "FeatureCollection",
@@ -49,24 +49,19 @@ window.APP_DATA = {
                       type: "Feature",
                       geometry: {
                         type: "LineString",
-                        "coordinates": [
-                           [-110.3172041, 24.3364496],
-                           [-110.3172041, 24.3364496],
-                           [-110.3172061, 24.3364496],
-                           [-110.317634, 24.3364287],
-                           [-110.3182832, 24.33634],
-                           [-110.3185146, 24.3363198],
-                           [-110.3193967, 24.3362747],
-                           [-110.3197463, 24.3362573],
-                           [-110.3244408, 24.3357579]
+                        coordinates: [
+                          [-110.3169, 24.1625],
+                          [-110.3160, 24.1610],
+                          [-110.3150, 24.1595]
+                        ]
                       },
                       properties: {}
                     }
                   ]
                 },
                 achievement: {
-                  title: "Explorador del Tecolote",
-                  description: "Recorrido completado en la Playa el Tecolote"
+                  title: "Explorador del Centro Histórico",
+                  description: "Recorrido completado en el centro de La Paz"
                 }
               }
             }
