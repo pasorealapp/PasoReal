@@ -215,9 +215,9 @@
       <button id="goToHistory" class="link2" type="button">Ver historial</button>
       <button id="btnLogout" class="link" type="button">Cerrar sesión</button>
 
-      <footer id="secretFooter" style="margin-top:20px; opacity:.7;">
-        PasoReal · Camina el mundo desde casa
-      </footer>
+      <div id="secretFooter">
+  PasoReal • <span id="appVersion"></span>
+</div>
     </div>
   </div>
 
@@ -252,6 +252,10 @@
         <button id="btnRefreshMembership" class="link2" type="button" style="width:100%; margin-top:10px;">
           Ya pagué, revisar acceso
         </button>
+        
+        <button id="btnBackFromMembership" class="link2" type="button" style="width:100%; margin-top:10px; display:none;">
+  Volver
+</button>
 
         <button id="btnLogoutFromMembership" class="link" type="button" style="width:100%; margin-top:12px;">
           Cerrar sesión
@@ -549,6 +553,7 @@
   <script defer src="route360.js"></script>
 
   <!-- App boot -->
+  <script src="version.js"></script>
   <script defer src="app.js"></script>
 </body>
 </html>
