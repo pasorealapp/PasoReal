@@ -41,7 +41,7 @@ window.APP_DATA = {
               playa_el_tecolote: {
                 id: "playa_el_tecolote",
                 name: "Playa El Tecolote",
-                video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/a5298d3a149723a4c28deebc582158d8/manifest/video.m3u8",
+                video: "https://customer-cw0heb9gadqlxjsv.cloudflarestream.com/8aa913ae75d3814cce9a27bd280d2c4a/manifest/video.m3u8",
                 geojson: {
                   type: "FeatureCollection",
                   features: [
